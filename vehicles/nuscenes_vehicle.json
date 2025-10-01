@@ -9,11 +9,11 @@
                     "type": "sensor.lidar.ray_cast",
                     "id": "lidar_1",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
+                    "range": 70,
                     "channels": 32,
-                    "points_per_second": 320000,
-                    "upper_fov": 2.0,
-                    "lower_fov": -26.8,
+                    "points_per_second": 1390000,
+                    "upper_fov": 10.0,
+                    "lower_fov": -30.0,
                     "rotation_frequency": 20,
                     "noise_stddev": 0.0
                 },
@@ -24,7 +24,7 @@
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
-                    "range": 100.0
+                    "range": 250.0
                 },
                 {
                     "type": "sensor.other.radar",
@@ -64,51 +64,51 @@
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_1",
+                    "id": "rgb_view_front",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1600,
+                    "image_size_y": 900,
+                    "fov": 70.0
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_2",
+                    "id": "rgb_view_left_front",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1600,
+                    "image_size_y": 900,
+                    "fov": 70.0
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_3",
+                    "id": "rgb_view_right_front",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1600,
+                    "image_size_y": 900,
+                    "fov": 70.0
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_4",
+                    "id": "rgb_view_left_rear",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1600,
+                    "image_size_y": 900,
+                    "fov": 70.0
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_5",
+                    "id": "rgb_view_right_rear",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1600,
+                    "image_size_y": 900,
+                    "fov": 70.0
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_6",
+                    "id": "rgb_view_rear",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1600,
+                    "image_size_y": 900,
+                    "fov": 110.0
                 },
                 {
                     "type": "sensor.other.imu",
