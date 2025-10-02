@@ -7,103 +7,103 @@
             "sensors": [
                 {
                     "type": "sensor.lidar.ray_cast",
-                    "id": "lidar_1",
+                    "id": "lidar_front",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
+                    "range": 20,
                     "channels": 32,
                     "points_per_second": 320000,
-                    "upper_fov": 2.0,
-                    "lower_fov": -26.8,
+                    "upper_fov": 30.0,
+                    "lower_fov": -90.0,
                     "rotation_frequency": 20,
                     "noise_stddev": 0.0
                 },
                 {
                     "type": "sensor.lidar.ray_cast",
-                    "id": "lidar_2",
+                    "id": "lidar_side_left",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
+                    "range": 20,
                     "channels": 32,
                     "points_per_second": 320000,
-                    "upper_fov": 2.0,
-                    "lower_fov": -26.8,
+                    "upper_fov": 30.0,
+                    "lower_fov": -90.0,
                     "rotation_frequency": 20,
                     "noise_stddev": 0.0
                 },
                 {
                     "type": "sensor.lidar.ray_cast",
-                    "id": "lidar_3",
+                    "id": "lidar_side_right",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
+                    "range": 20,
                     "channels": 32,
                     "points_per_second": 320000,
-                    "upper_fov": 2.0,
-                    "lower_fov": -26.8,
+                    "upper_fov": 30.0,
+                    "lower_fov": -90.0,
                     "rotation_frequency": 20,
                     "noise_stddev": 0.0
                 },
                 {
                     "type": "sensor.lidar.ray_cast",
-                    "id": "lidar_4",
+                    "id": "lidar_rear",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
+                    "range": 20,
                     "channels": 32,
                     "points_per_second": 320000,
-                    "upper_fov": 2.0,
-                    "lower_fov": -26.8,
+                    "upper_fov": 30.0,
+                    "lower_fov": -90.0,
                     "rotation_frequency": 20,
                     "noise_stddev": 0.0
                 },
                 {
                     "type": "sensor.lidar.ray_cast",
-                    "id": "lidar_5",
+                    "id": "lidar_top",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
-                    "range": 50,
+                    "range": 75,
                     "channels": 32,
                     "points_per_second": 320000,
-                    "upper_fov": 2.0,
-                    "lower_fov": -26.8,
+                    "upper_fov": 2.4,
+                    "lower_fov": -17.6,
                     "rotation_frequency": 20,
                     "noise_stddev": 0.0
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_1",
+                    "id": "rgb_view_front",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1920,
+                    "image_size_y": 1280,
+                    "fov": 50.4
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_2",
+                    "id": "rgb_view_front_left",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1920,
+                    "image_size_y": 1280,
+                    "fov": 50.4
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_3",
+                    "id": "rgb_view_front_right",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1920,
+                    "image_size_y": 1280,
+                    "fov": 50.4
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_4",
+                    "id": "rgb_view_side_left",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1920,
+                    "image_size_y": 1040,
+                    "fov": 50.4
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_5",
+                    "id": "rgb_view_side_right",
                     "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
-                    "fov": 90.0
+                    "image_size_x": 1920,
+                    "image_size_y": 1040,
+                    "fov": 50.4
                 }
             ]
         }
