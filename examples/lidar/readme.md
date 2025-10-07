@@ -2,13 +2,13 @@ use recording like in the demo example
 to visualize, use rviz2 -> set fixed_frame to ego_vehicle/lidar, add pointcloud2 display time, add topic
 * start carla and ros bridge
 * spawn ego vehicle
-```
+```zsh
 ros2 launch carla_spawn_objects carla_spawn_objects.launch.py \
     objects_definition_file:=ego_vehicle.json
 python3 vehicle_ctrl.py
 ```
 * start recording
-```
+```zsh
 ros2 bag record /carla/ego_vehicle/lidar
 ```
 

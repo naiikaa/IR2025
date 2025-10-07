@@ -8,7 +8,7 @@
                 {
                     "type": "sensor.lidar.ray_cast",
                     "id": "lidar_1",
-                    "spawn_point": {"x": 0.0, "y": 0.0, "z": 2.4, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1265.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "range": 100,
                     "channels": 128,
                     "points_per_second": 26214440,
@@ -19,8 +19,8 @@
                 },
                 {
                     "type": "sensor.other.radar",
-                    "id": "radar_1",
-                    "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "id": "radar_left",
+                    "spawn_point": {"x": 3566.0, "y": -535.0, "z": 480.0, "roll": 0.0, "pitch": 0.0, "yaw": -45.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
@@ -28,8 +28,8 @@
                 },
                 {
                     "type": "sensor.other.radar",
-                    "id": "radar_2",
-                    "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "id": "radar_center",
+                    "spawn_point": {"x": 3555.0, "y": -195.0, "z": 580.0, "roll": 0.0, "pitch": 0.5,"yaw": 40.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
@@ -37,8 +37,8 @@
                 },
                 {
                     "type": "sensor.other.radar",
-                    "id": "radar_3",
-                    "spawn_point": {"x": 2.0, "y": 0.0, "z": 2.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "id": "radar_right",
+                    "spawn_point": {"x": 3566.0, "y": 535.0, "z": 480.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
@@ -46,19 +46,19 @@
                 },
                 {
                     "type": "sensor.camera.rgb",
-                    "id": "rgb_view_1",
-                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
-                    "image_size_x": 800,
-                    "image_size_y": 600,
+                    "id": "rgb_view",
+                    "spawn_point": {"x": 1940.0, "y": 0.0, "z": 1168.0, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "image_size_x": 4112,
+                    "image_size_y": 2176,
                     "fov": 90.0
                 },
                 {
                     "type": "sensor.other.imu",
-                    "id": "imu_1",
+                    "id": "imu",
                     "spawn_point": {
-                        "x": 0.0, 
-                        "y": 0.0, 
-                        "z": 0.0,
+                        "x": -253.0, 
+                        "y": -20.0, 
+                        "z": 615.0,
                         "roll": 0.0, 
                         "pitch": 0.0, 
                         "yaw": 0.0
