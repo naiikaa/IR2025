@@ -68,7 +68,7 @@
                 {
                     "type": "sensor.camera.rgb",
                     "id": "rgb_view_front",
-                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1265.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "image_size_x": 1920,
                     "image_size_y": 1280,
                     "fov": 50.4
@@ -76,7 +76,7 @@
                 {
                     "type": "sensor.camera.rgb",
                     "id": "rgb_view_front_left",
-                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1265.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 0.0, "yaw": 45.0},
                     "image_size_x": 1920,
                     "image_size_y": 1280,
                     "fov": 50.4
@@ -84,7 +84,7 @@
                 {
                     "type": "sensor.camera.rgb",
                     "id": "rgb_view_front_right",
-                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1265.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 20.0, "yaw": -45.0},
                     "image_size_x": 1920,
                     "image_size_y": 1280,
                     "fov": 50.4
@@ -92,7 +92,7 @@
                 {
                     "type": "sensor.camera.rgb",
                     "id": "rgb_view_side_left",
-                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1265.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 20.0, "yaw": 90.0},
                     "image_size_x": 1920,
                     "image_size_y": 1040,
                     "fov": 50.4
@@ -100,7 +100,7 @@
                 {
                     "type": "sensor.camera.rgb",
                     "id": "rgb_view_side_right",
-                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1265.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 20.0, "yaw": -90.0},
                     "image_size_x": 1920,
                     "image_size_y": 1040,
                     "fov": 50.4
