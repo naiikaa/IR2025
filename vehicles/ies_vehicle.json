@@ -2,11 +2,11 @@
     "objects": [
         {
             "type": "vehicle.tesla.model3",
-            "id": "ies_vehicle",
+            "id": "ego_vehicle",
             "attach": true,
             "sensors": [
                 {
-                    "type": "sensor.lidar.ray_cast",
+                    "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_1",
                     "spawn_point": {"x": 0.6650, "y": 0.0, "z": 1.6130, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "range": 100,

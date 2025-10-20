@@ -2,11 +2,11 @@
     "objects": [
         {
             "type": "vehicle.tesla.model3",
-            "id": "nuscenes_vehicle",
+            "id": "ego_vehicle",
             "attach": true,
             "sensors": [
                 {
-                    "type": "sensor.lidar.ray_cast",
+                    "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_top",
                     "spawn_point": {"x": 0.0, "y": 0.0, "z": 1613.0, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "range": 70,
