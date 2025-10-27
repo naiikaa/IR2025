@@ -1,7 +1,7 @@
 # Digital Twin of Kassel — OpenStreetMap to CARLA Workflow
 
 ## Overview
-This project documents the first tries to genrate a **digital twin environment of Kassel (Hessen, Germany)** for autonomous-driving simulation and research.  
+This readme documents the first tries to genrate a **digital twin environment of Kassel (Hessen, Germany)** for autonomous-driving simulation and research.  
 The workflow integrates **OpenStreetMap (OSM)** data, **OpenDRIVE** conversion, and **CARLA 0.9.15** to produce a reproducible, open-source representation of a real urban area suitable for experimentation with autonomous agents, perception systems, and reinforcement-learning frameworks.
 
 ## Workflow Summary
