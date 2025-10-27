@@ -20,7 +20,7 @@
                 {
                     "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_front_left",
-                    "spawn_point": {"x": 1.4, "y": -0.24, "z": 0.2, "roll": 0.0, "pitch": -45.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1.4, "y": -0.24, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": -45.0},
                     "range": 60,
                     "channels": 64,
                     "points_per_second": 320000,
@@ -32,7 +32,7 @@
                 {
                     "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_front_right",
-                    "spawn_point": {"x": 1.4, "y": 0.24, "z": 0.2, "roll": 0.0, "pitch": 45.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1.4, "y": 0.24, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": 45.0},
                     "range": 60,
                     "channels": 64,
                     "points_per_second": 320000,
@@ -44,7 +44,7 @@
                 {
                     "type": "sensor.lidar.ray_cast",
                     "id": "lidar_rear",
-                    "spawn_point": {"x": -0.8, "y": -0.1, "z": 0.23, "roll": 0.0, "pitch": 180.0, "yaw": 0.0},
+                    "spawn_point": {"x": -0.8, "y": -0.1, "z": 0.23, "roll": 0.0, "pitch": 0.0, "yaw": 180.0},
                     "range": 100,
                     "channels": 64,
                     "points_per_second": 320000,
@@ -56,7 +56,7 @@
                 {
                     "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_rear_left",
-                    "spawn_point": {"x": -0.8, "y": -0.24, "z": 0.2, "roll": 0.0, "pitch": -135.0, "yaw": 0.0},
+                    "spawn_point": {"x": -0.8, "y": -0.24, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": -135.0},
                     "range": 60,
                     "channels": 64,
                     "points_per_second": 320000,
@@ -68,7 +68,7 @@
                 {
                     "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_rear_right",
-                    "spawn_point": {"x": -0.8, "y": 0.24, "z": 0.2, "roll": 0.0, "pitch": 135.0, "yaw": 0.0},
+                    "spawn_point": {"x": -0.8, "y": 0.24, "z": 0.2, "roll": 0.0, "pitch": 0.0, "yaw": 135.0},
                     "range": 60,
                     "channels": 64,
                     "points_per_second": 320000,
@@ -80,7 +80,7 @@
                 {
                     "type": "sensor.lidar.ray_cast",
                     "id": "lidar_left",
-                    "spawn_point": {"x": 0.0, "y": -0.1, "z": 0.23, "roll": 0.0, "pitch": 90.0, "yaw": 0.0},
+                    "spawn_point": {"x": 0.0, "y": -0.1, "z": 0.23, "roll": 0.0, "pitch": 9.0, "yaw": 90.0},
                     "range": 100,
                     "channels": 64,
                     "points_per_second": 320000,
@@ -92,7 +92,7 @@
                 {
                     "type": "sensor.lidar.ray_cast",
                     "id": "lidar_right",
-                    "spawn_point": {"x": 0.0, "y": -0.1, "z": 0.23, "roll": 0.0, "pitch": -90.0, "yaw": 0.0},
+                    "spawn_point": {"x": 0.0, "y": -0.1, "z": 0.23, "roll": 0.0, "pitch": 0.0, "yaw": -90.0},
                     "range": 100,
                     "channels": 64,
                     "points_per_second": 320000,
