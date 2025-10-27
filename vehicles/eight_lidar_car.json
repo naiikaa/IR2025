@@ -3,6 +3,7 @@
         {
             "type": "vehicle.tesla.model3",
             "id": "ego_vehicle",
+            "roll_name": "ego_vehicle",
             "attach": true,
             "sensors": [
                 {
