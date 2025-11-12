@@ -17,11 +17,13 @@ Create a localized, reproducible map of Kassel to support region-specific simula
 ## General Workflow (High-Level)
 1. **Acquire Data**  
    Select the Kassel area in OSM or obtain a ready extract (e.g., BBBike). Save as `.osm` or `.pbf`.
+   [kassel.osm](https://drive.google.com/file/d/1O0YveCL7ctZ10RQRTxfJNlObxsCWisVs/view?usp=drive_link)
 2. **Convert to OpenDRIVE**  
    Follow the official CARLA “Building Maps / Importing OpenStreetMap” guidance to convert OSM into `.xodr`.
-3. **Import in CARLA**  
+   [kassel.xodr](https://drive.google.com/file/d/1ZYZGGTsWgFocSA7ia-dxGz6XZUBRXs0C/view?usp=drive_link)
+4. **Import in CARLA**  
    Load the generated OpenDRIVE map in CARLA and verify that the world instantiates successfully.
-4. **(Optional) Enrich the Map**  
+5. **(Optional) Enrich the Map**  
    Use authoring tools (e.g., RoadRunner) to add 3D assets and details required for stable physics and realistic perception.
 
 
