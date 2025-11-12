@@ -4,3 +4,4 @@ Intelligent Robots Lab at the university of Kassel. Main focus is to work on [CA
 
 - [Installation Guide (LaTeX/PDF)](Installation_Guide_Carla_ROS.pdf)
 - [Clients and Agents in CARLA Simulator](Client_and_Agents_in_CARLA_Simulator.pdf)
+- [Open Street Map to use in CARLA Simulation](kasselMap/readme.md)
