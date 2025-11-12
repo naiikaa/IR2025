@@ -24,10 +24,6 @@ Create a localized, reproducible map of Kassel to support region-specific simula
 4. **(Optional) Enrich the Map**  
    Use authoring tools (e.g., RoadRunner) to add 3D assets and details required for stable physics and realistic perception.
 
-## Reproducibility Notes
-- Use neutral paths (e.g., `~/project/maps/kassel/`) and pin tool versions in your environment.
-- Record the extract provider and timestamp (e.g., BBBike export date) for provenance.
-- Keep this optional workflow separate from the main CARLA + ROS2 documentation.
 
 ## References
 - Official CARLA Docs — *Building Maps → Importing OpenStreetMap*  
