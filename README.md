@@ -14,7 +14,7 @@ The materials provided here summarize essential setup procedures, system interac
 - **[Clients and Agents in CARLA Simulator (PDF)](Client_and_Agents_in_CARLA_Simulator.pdf)**  
   Describes the Client–World and Agent architecture in CARLA, explaining how control logic, weather, and sensor data interact within the simulator.
 
-- **Open Street Map Integration for CARLA Simulation**  
+- **[Open Street Map Integration for CARLA Simulation](kasselMap/readme.md)**  
   Notes and conversion workflow for importing OSM maps (e.g., Kassel region) into CARLA to enable scenario-specific experiments and synthetic dataset generation.
 
 ---
