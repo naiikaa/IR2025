@@ -8,7 +8,7 @@
                 {
                     "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_top",
-                    "spawn_point": {"x": 0.6650, "y": 0.0, "z": 1.6130, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "spawn_point": {"x": 1.5, "y": 0.0, "z": 1.6130, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "range": 100,
                     "channels": 128,
                     "points_per_second": 26214440,
@@ -20,7 +20,7 @@
                 {
                     "type": "sensor.other.radar",
                     "id": "radar_left",
-                    "spawn_point": {"x": 1.6, "y": -0.535, "z": 0.48, "roll": 0.0, "pitch": 0.0, "yaw": -45.0},
+                    "spawn_point": {"x": 2, "y": -0.535, "z": 0.48, "roll": 0.0, "pitch": 0.0, "yaw": -45.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
@@ -29,7 +29,7 @@
                 {
                     "type": "sensor.other.radar",
                     "id": "radar_center",
-                    "spawn_point": {"x": 1.550, "y": -0.19, "z": 0.58, "roll": 0.0, "pitch": 0.5,"yaw": 40.0},
+                    "spawn_point": {"x": 2.15, "y": -0.19, "z": 0.58, "roll": 0.0, "pitch": 0.5,"yaw": 40.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
@@ -38,7 +38,7 @@
                 {
                     "type": "sensor.other.radar",
                     "id": "radar_right",
-                    "spawn_point": {"x": 1.6, "y": 0.53, "z": 0.48, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
+                    "spawn_point": {"x": 2, "y": 0.53, "z": 0.48, "roll": 0.0, "pitch": 0.0, "yaw": 0.0},
                     "horizontal_fov": 30.0,
                     "vertical_fov": 10.0,
                     "points_per_second": 1500,
