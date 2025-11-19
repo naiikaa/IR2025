@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scen"
+authors = [
+    {name = "Sören Lohr", email = "lohr.so@web.de"},
+    {name = "Nikita Popkov", email = "np@uni-kassel.de"}
+]
+description = "SCENario and Sensor Configuration Environment"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+include = ["scen*"]

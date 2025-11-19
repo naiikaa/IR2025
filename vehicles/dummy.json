@@ -1,0 +1,36 @@
+{
+    "objects": [
+        {
+            "type": "vehicle.tesla.model3",
+            "id": "ego_vehicle",
+            "role_name": "ego_vehicle",
+            "attach": true,
+            "sensors": [
+                {
+                    "type": "sensor.camera.rgb",
+                    "id": "rgb_view",
+                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "image_size_x": 800,
+                    "image_size_y": 600,
+                    "fov": 90.0
+                }
+            ]
+        },
+        {
+            "type": "vehicle.tesla.model3",
+            "id": "adversary",
+            "role_name": "adversary",
+            "attach": true,
+            "sensors": [
+                {
+                    "type": "sensor.camera.rgb",
+                    "id": "rgb_view",
+                    "spawn_point": {"x": -4.5, "y": 0.0, "z": 2.8, "roll": 0.0, "pitch": 20.0, "yaw": 0.0},
+                    "image_size_x": 800,
+                    "image_size_y": 600,
+                    "fov": 90.0
+                }
+            ]
+        }
+    ]
+}

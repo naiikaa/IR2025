@@ -1,0 +1,103 @@
+import pandas as pd
+import numpy as np
+import os, h5py, yaml
+from pathlib import Path
+
+from rclpy.serialization import deserialize_message
+from sensor_msgs.msg import PointCloud2, Image
+import sensor_msgs_py.point_cloud2 as pc2
+from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
+import cv2
+from cv_bridge import CvBridge
+
+def save_metadata(lidar_data_fpath, car_config):
+    with open(car_config, "r") as f:
+        data = f.read()
+    with h5py.File(lidar_data_fpath, "a") as f:
+        f["metadata2"] = [data]
+        #f.create_dataset("metadata", data=data)
+
+def extract_pcl_data(dbfile, pcl_topics: list, output):
+    storage_options = StorageOptions(uri=dbfile, storage_id='sqlite3')
+    converter_options = ConverterOptions('', '')
+
+    reader = SequentialReader()
+    reader.open(storage_options, converter_options)
+
+    h5_file = h5py.File(output, 'w')
+
+    topic_groups = {topic: h5_file.create_group(topic.replace('/', '_')) for topic in pcl_topics}
+    frame_counters = {topic: 0 for topic in pcl_topics}
+    
+    frame_idx = 0
+    while reader.has_next():
+        print(f"Processing frame {frame_idx}...\r", end="",flush=True)
+        topic, data, t = reader.read_next()
+        if topic not in pcl_topics:
+            continue
+        msg = deserialize_message(data, PointCloud2)
+
+        # Extract points as numpy array
+        field_names = [field.name for field in msg.fields]
+        points = np.array(list(pc2.read_points(msg, field_names=field_names, skip_nans=True)))
+
+        frame_idx = frame_counters[topic]
+        topic_groups[topic].create_dataset(
+            f"frame_{frame_idx:06d}",
+            data=points,
+            compression='gzip',
+            compression_opts=4
+        )
+
+        frame_counters[topic] += 1
+    h5_file.close()
+
+def extract_camera_data(db_file, topic_name, output_dir):
+    bridge = CvBridge()
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Setup ROS 2 bag reader
+    storage_options = StorageOptions(uri=db_file, storage_id='sqlite3')
+    converter_options = ConverterOptions('', '')
+    reader = SequentialReader()
+    reader.open(storage_options, converter_options)
+
+    frame_count = 0
+
+    while reader.has_next():
+        (topic, data, t) = reader.read_next()
+        if topic == topic_name:
+            img_msg = deserialize_message(data, Image)
+            cv_image = bridge.imgmsg_to_cv2(img_msg, desired_encoding="bgr8")
+            cv2.imwrite(str(Path(output_dir) / f"frame{frame_count}.png"), cv_image)
+            frame_count += 1
+    
+
+    print(f"Camera data extracted, total frames: {frame_count}")
+
+def extract_pcl_topics(metadata_fpath):
+    with open(metadata_fpath, 'r') as f:
+        metadata = yaml.safe_load(f)
+
+    topic_metadata = metadata["rosbag2_bagfile_information"]["topics_with_message_count"]
+
+    topic_list = [topic["topic_metadata"]["name"] for topic in topic_metadata if topic["topic_metadata"]["type"] == "sensor_msgs/msg/PointCloud2"]
+    return topic_list
+
+if __name__ == '__main__':
+    db_dir = Path('/home/slohr/Workspace/IRL/IR2025/data/251014_eight_lidar_10s')
+    topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
+    # extract_pcl_data(
+    #     str(db_dir / '251014_eight_lidar_10s_0.db3'),
+    #     topic_list,
+    #     str(db_dir / 'lidar_data.h5')
+    # )
+    save_metadata(
+        str(db_dir / 'lidar_data.h5'),
+        str(db_dir / 'eight_car_lidar.json')
+    )
+    # extract_camera_data(
+    #     db_file = str(db_dir / 'rosbag2_2025_10_11-19_24_30_0.db3'),
+    #     topic_name = "/carla/ego_vehicle/rgb_view/image",
+    #     output_dir = str(db_dir / "carla_camera")
+    # )
