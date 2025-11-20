@@ -10,6 +10,38 @@ from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
 import cv2
 from cv_bridge import CvBridge
 
+semantic_lidar_tags = {
+  0 : "Unlabeled",
+  1 : "Roads",
+  2 : "SideWalks",
+  3 : "Buildings",
+  4 : "Wall",
+  5 : "Fence",
+  6 : "Pole",
+  7 : "TrafficLight",
+  8 : "TrafficSign",
+  9 : "Vegetation",
+  10 : "Terrain",
+  11 : "Sky",
+  12 : "Pedestrian",
+  13 : "Rider",
+  14 : "Car",
+  15 : "Truck",
+  16 : "Bus",
+  17 : "Train",
+  18 : "Motorcycle",
+  19 : "Bicycle",
+  20 : "Static",
+  21 : "Dynamic",
+  22 : "Other",
+  23 : "Water",
+  24 : "RoadLine",
+  25 : "Ground",
+  26 : "Bridge",
+  27 : "RailTrack",
+  28 : "GuardRail", 
+}
+
 def save_metadata(lidar_data_fpath, car_config):
     with open(car_config, "r") as f:
         data = f.read()
@@ -39,12 +71,17 @@ def extract_pcl_data(dbfile, pcl_topics: list, output):
 
         # Extract points as numpy array
         field_names = [field.name for field in msg.fields]
-        points = np.array(list(pc2.read_points(msg, field_names=field_names, skip_nans=True)))
+        points = pc2.read_points(msg, field_names=field_names, skip_nans=True)
 
+        lookup = np.array(list(semantic_lidar_tags.values()))
+        new_dtype = [(n, h5py.string_dtype(encoding='utf-8') if n == 'ObjTag' else points.dtype[n]) for n in points.dtype.names]
+        
+        new_points = points.astype(new_dtype)
+        new_points[:]["ObjTag"] = lookup[points[:]["ObjTag"]]
         frame_idx = frame_counters[topic]
         topic_groups[topic].create_dataset(
             f"frame_{frame_idx:06d}",
-            data=points,
+            data=new_points,
             compression='gzip',
             compression_opts=4
         )

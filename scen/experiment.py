@@ -1,7 +1,39 @@
-import os, atexit, time, carla, signal, subprocess, shutil, numpy as np, h5py
+import os, atexit, time, carla, signal, subprocess, shutil, numpy as np, h5py, json
 from pathlib import Path
 from subprocess import Popen, PIPE, CalledProcessError
 from config import ExperimentConfig, save_experiment_config, load_experiment_config
+
+semantic_lidar_tags = {
+  0 : "Unlabeled",
+  1 : "Roads",
+  2 : "SideWalks",
+  3 : "Buildings",
+  4 : "Wall",
+  5 : "Fence",
+  6 : "Pole",
+  7 : "TrafficLight",
+  8 : "TrafficSign",
+  9 : "Vegetation",
+  10 : "Terrain",
+  11 : "Sky",
+  12 : "Pedestrian",
+  13 : "Rider",
+  14 : "Car",
+  15 : "Truck",
+  16 : "Bus",
+  17 : "Train",
+  18 : "Motorcycle",
+  19 : "Bicycle",
+  20 : "Static",
+  21 : "Dynamic",
+  22 : "Other",
+  23 : "Water",
+  24 : "RoadLine",
+  25 : "Ground",
+  26 : "Bridge",
+  27 : "RailTrack",
+  28 : "GuardRail", 
+}
 
 SEM_LIDAR_DTYPE = np.dtype([
     ('x', np.float32),
@@ -214,6 +246,10 @@ class ExperimentRunner:
             grp.create_dataset("actors", data=np.array(bounding_boxes))
             self.bbox_tick += 1
 
+    def save_actor_id_and_type(self):
+        actor_id_type_map={a.id: a.type for a in self.world.get_actors()}
+        self.bbox_save_file[]=[json.dumps(actor_id_type_map)]
+
     def run_once(self):
         
 
@@ -244,6 +280,8 @@ class ExperimentRunner:
         time.sleep(5)
         if self.config.bridge_passive_mode:
             self.world.tick()
+        if self.config.record_bboxes:
+            self.save_actor_id_and_type()
         print(f"world ticks: {self.world_ticks}")
         tick = 0
         while True:
