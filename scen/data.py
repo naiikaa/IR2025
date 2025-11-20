@@ -85,13 +85,13 @@ def extract_pcl_topics(metadata_fpath):
     return topic_list
 
 if __name__ == '__main__':
-    db_dir = Path('/home/slohr/Workspace/IRL/IR2025/data/251014_eight_lidar_10s')
+    db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
-    # extract_pcl_data(
-    #     str(db_dir / '251014_eight_lidar_10s_0.db3'),
-    #     topic_list,
-    #     str(db_dir / 'lidar_data.h5')
-    # )
+    extract_pcl_data(
+        str(db_dir / 'db_0.db3'),
+        [topic_list[0]],
+        str(db_dir / 'lidar_data.h5')
+    )
     save_metadata(
         str(db_dir / 'lidar_data.h5'),
         str(db_dir / 'eight_car_lidar.json')

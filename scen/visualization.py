@@ -96,11 +96,11 @@ def create_camera_video(db_file, topic_name, output_file, fps=20):
 
 if __name__ == '__main__':
     
-    db_dir = Path('/home/slohr/Workspace/IRL/IR2025/data/251014_eight_lidar_10s')
+    db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
     create_pcl_video(
         str(db_dir / "lidar_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
-        "_carla_ego_vehicle_lidar_front"
+        "_carla_ego_vehicle_lidar_right"
     )
     # create_camera_video(
     #     db_file = str(db_dir / 'rosbag2_2025_10_11-19_24_30_0.db3'),

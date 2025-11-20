@@ -19,7 +19,7 @@ BBOX_DTYPE = np.dtype([
     ('roll', np.float32),('pitch', np.float32),('yaw', np.float32),
 ])
 
-def lidar_data_to_numpy(lidar_data: carla.SemanticLidarMeasurement):
+def lidar_data_to_numpy(lidar_data:carla.SemanticLidarMeasurement):
     return np.frombuffer(lidar_data.raw_data, dtype=SEM_LIDAR_DTYPE)
 
 class ExperimentRunner:
@@ -37,6 +37,9 @@ class ExperimentRunner:
         if self.config.bridge_passive_mode:
             settings.synchronous_mode = True
         settings.fixed_delta_seconds = self.timestep
+
+        settings.no_rendering_mode = True
+ 
         self.world.apply_settings(settings)
         atexit.register(self.cleanup)
 
@@ -133,7 +136,7 @@ class ExperimentRunner:
         atexit.register(ros2bag_logfile.close)
         # exclude vehicle info, status, control etc.
         topic_list = [topic for topic in self.get_topic_list() if 'ego_vehicle' in topic and 'ego_vehicle/vehicle' not in topic]
-        ros2bag_cmd = f"ros2 bag record -o {self.config.experiment_name}".split(" ") + topic_list
+        ros2bag_cmd = f"ros2 bag record -o {self.config.experiment_name}/db".split(" ") + topic_list
         os.makedirs(self.config.data_dir, exist_ok=True)
         self.processes["ros2bag_process"] = Popen(ros2bag_cmd, cwd=self.config.data_dir, stdout=ros2bag_logfile, bufsize=1, universal_newlines=True)
 
@@ -212,6 +215,8 @@ class ExperimentRunner:
             self.bbox_tick += 1
 
     def run_once(self):
+        
+
         self.setup_bridge()
         time.sleep(15) #we could also be elaborate and somehow check the logs for success... but for now this should be enough
         if self.config.bridge_passive_mode:
@@ -265,15 +270,15 @@ class ExperimentRunner:
 
 if __name__ == '__main__':
     test_config = ExperimentConfig(
-        "251114_eight_lidar_10s", 
+        "251119_eight_lidar_10s", 
         bridge_passive_mode=True,
-        record=False,
+        record=True,
         record_bboxes=True,
         duration_in_s=10,
-        num_vehicles=300,
-        num_walkers=10,
-        town="Town15",
-        host="winhost",
+        num_vehicles=250,
+        num_walkers=50,
+        town="Town01",
+        host="localhost",
     )
     runner = ExperimentRunner(test_config)
     runner.run_once()
