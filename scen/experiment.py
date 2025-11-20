@@ -2,6 +2,7 @@ import os, atexit, time, carla, signal, subprocess, shutil, numpy as np, h5py, j
 from pathlib import Path
 from subprocess import Popen, PIPE, CalledProcessError
 from config import ExperimentConfig, save_experiment_config, load_experiment_config
+from util.coords import coords_to_ego
 
 semantic_lidar_tags = {
   0 : "Unlabeled",
@@ -229,21 +230,40 @@ class ExperimentRunner:
 
         if self.config.record_bboxes:
             bounding_boxes = []
+            
+            ebbox = self.ego_vehicle.bounding_box
+            etf = self.ego_vehicle.get_transform()
+
+            ex,ey,ez = ebbox.location.x, ebbox.location.y, ebbox.location.z
+            eroll, epitch, eyaw = etf.rotation.roll, etf.rotation.pitch, etf.rotation.yaw
+
             for actor in visible_actors:
-                bbox = actor.bounding_box
-                tf = actor.get_transform()
+                abbox = actor.bounding_box
+                atf = actor.get_transform()
+                
+                ax,ay,az = abbox.location.x, abbox.location.y, abbox.location.z
+                aroll,apitch,ayaw = atf.rotation.roll, atf.rotation.pitch
+
+                new_coords,new_rotation = coords_to_ego([ex,ey,ez,eroll,epitch,eyaw],
+                                                       [ax,ay,az,aroll,apitch,ayaw])
+                ax,ay,az = new_coords
+                aroll,apitch,ayaw = new_rotation
+
                 bounding_boxes.append(np.array([
                     actor.id,
-                    bbox.location.x, bbox.location.y, bbox.location.z,
-                    bbox.extent.x, bbox.extent.y, bbox.extent.z,
-                    tf.rotation.roll, tf.rotation.pitch, tf.rotation.yaw
+                    ax, ay, az,
+                    abbox.extent.x, abbox.extent.y, abbox.extent.z,
+                    aroll, apitch, ayaw
                 ], dtype=BBOX_DTYPE))
 
-            bbox = self.ego_vehicle.bounding_box
+            
+
+            
+
             ego_vehicle_bbox_data = np.array([
-                bbox.location.x, bbox.location.y, bbox.location.z,
-                bbox.extent.x, bbox.extent.y, bbox.extent.z,
-                tf.rotation.roll, tf.rotation.pitch, tf.rotation.yaw
+                ex, ey, ez,
+                ebbox.extent.x, ebbox.extent.y, ebbox.extent.z,
+                eroll, epitch, eyaw
             ], dtype=BBOX_DTYPE)
 
             grp = self.bbox_save_file.create_group(f"frame_{self.bbox_tick:06d}")
