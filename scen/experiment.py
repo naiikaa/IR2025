@@ -213,8 +213,13 @@ class ExperimentRunner:
             visible_actors_ids = np.unique(np.concatenate(object_ids_per_lidar))
             tags = np.unique(np.concatenate(object_tags_per_lidar))
 
+            # Extract actor objects from actor IDs
             actor_list = self.world.get_actors()
-            visible_actors = [actor_list.find(int(actor)) for actor in visible_actors_ids]
+            visible_actors = []
+            for actor_id in visible_actors_ids:
+                actor = actor_list.find(int(actor_id))
+                if actor:
+                    visible_actors.append(actor)
             
         else:
             visible_actors_ids = np.array([])
@@ -247,8 +252,8 @@ class ExperimentRunner:
             self.bbox_tick += 1
 
     def save_actor_id_and_type(self):
-        actor_id_type_map={a.id: a.type for a in self.world.get_actors()}
-        self.bbox_save_file[]=[json.dumps(actor_id_type_map)]
+        actor_id_type_map = {a.id: a.type_id for a in self.world.get_actors()}
+        self.bbox_save_file["actor_id_type_map"] = [json.dumps(actor_id_type_map)]
 
     def run_once(self):
         
