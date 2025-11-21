@@ -1,7 +1,40 @@
-import os, atexit, time, carla, signal, subprocess, shutil, numpy as np, h5py
+import os, atexit, time, carla, signal, subprocess, shutil, numpy as np, h5py, json
 from pathlib import Path
 from subprocess import Popen, PIPE, CalledProcessError
 from config import ExperimentConfig, save_experiment_config, load_experiment_config
+from util.coords import coords_to_ego
+
+semantic_lidar_tags = {
+  0 : "Unlabeled",
+  1 : "Roads",
+  2 : "SideWalks",
+  3 : "Buildings",
+  4 : "Wall",
+  5 : "Fence",
+  6 : "Pole",
+  7 : "TrafficLight",
+  8 : "TrafficSign",
+  9 : "Vegetation",
+  10 : "Terrain",
+  11 : "Sky",
+  12 : "Pedestrian",
+  13 : "Rider",
+  14 : "Car",
+  15 : "Truck",
+  16 : "Bus",
+  17 : "Train",
+  18 : "Motorcycle",
+  19 : "Bicycle",
+  20 : "Static",
+  21 : "Dynamic",
+  22 : "Other",
+  23 : "Water",
+  24 : "RoadLine",
+  25 : "Ground",
+  26 : "Bridge",
+  27 : "RailTrack",
+  28 : "GuardRail", 
+}
 
 SEM_LIDAR_DTYPE = np.dtype([
     ('x', np.float32),
@@ -19,7 +52,7 @@ BBOX_DTYPE = np.dtype([
     ('roll', np.float32),('pitch', np.float32),('yaw', np.float32),
 ])
 
-def lidar_data_to_numpy(lidar_data: carla.SemanticLidarMeasurement):
+def lidar_data_to_numpy(lidar_data:carla.SemanticLidarMeasurement):
     return np.frombuffer(lidar_data.raw_data, dtype=SEM_LIDAR_DTYPE)
 
 class ExperimentRunner:
@@ -37,6 +70,9 @@ class ExperimentRunner:
         if self.config.bridge_passive_mode:
             settings.synchronous_mode = True
         settings.fixed_delta_seconds = self.timestep
+
+        settings.no_rendering_mode = True
+ 
         self.world.apply_settings(settings)
         atexit.register(self.cleanup)
 
@@ -133,7 +169,7 @@ class ExperimentRunner:
         atexit.register(ros2bag_logfile.close)
         # exclude vehicle info, status, control etc.
         topic_list = [topic for topic in self.get_topic_list() if 'ego_vehicle' in topic and 'ego_vehicle/vehicle' not in topic]
-        ros2bag_cmd = f"ros2 bag record -o {self.config.experiment_name}".split(" ") + topic_list
+        ros2bag_cmd = f"ros2 bag record -o {self.config.experiment_name}/db".split(" ") + topic_list
         os.makedirs(self.config.data_dir, exist_ok=True)
         self.processes["ros2bag_process"] = Popen(ros2bag_cmd, cwd=self.config.data_dir, stdout=ros2bag_logfile, bufsize=1, universal_newlines=True)
 
@@ -178,8 +214,13 @@ class ExperimentRunner:
             visible_actors_ids = np.unique(np.concatenate(object_ids_per_lidar))
             tags = np.unique(np.concatenate(object_tags_per_lidar))
 
+            # Extract actor objects from actor IDs
             actor_list = self.world.get_actors()
-            visible_actors = [actor_list.find(int(actor)) for actor in visible_actors_ids]
+            visible_actors = []
+            for actor_id in visible_actors_ids:
+                actor = actor_list.find(int(actor_id))
+                if actor:
+                    visible_actors.append(actor)
             
         else:
             visible_actors_ids = np.array([])
@@ -189,21 +230,40 @@ class ExperimentRunner:
 
         if self.config.record_bboxes:
             bounding_boxes = []
+            
+            ebbox = self.ego_vehicle.bounding_box
+            etf = self.ego_vehicle.get_transform()
+
+            ex,ey,ez = ebbox.location.x, ebbox.location.y, ebbox.location.z
+            eroll, epitch, eyaw = etf.rotation.roll, etf.rotation.pitch, etf.rotation.yaw
+
             for actor in visible_actors:
-                bbox = actor.bounding_box
-                tf = actor.get_transform()
+                abbox = actor.bounding_box
+                atf = actor.get_transform()
+                
+                ax,ay,az = abbox.location.x, abbox.location.y, abbox.location.z
+                aroll,apitch,ayaw = atf.rotation.roll, atf.rotation.pitch
+
+                new_coords,new_rotation = coords_to_ego([ex,ey,ez,eroll,epitch,eyaw],
+                                                       [ax,ay,az,aroll,apitch,ayaw])
+                ax,ay,az = new_coords
+                aroll,apitch,ayaw = new_rotation
+
                 bounding_boxes.append(np.array([
                     actor.id,
-                    bbox.location.x, bbox.location.y, bbox.location.z,
-                    bbox.extent.x, bbox.extent.y, bbox.extent.z,
-                    tf.rotation.roll, tf.rotation.pitch, tf.rotation.yaw
+                    ax, ay, az,
+                    abbox.extent.x, abbox.extent.y, abbox.extent.z,
+                    aroll, apitch, ayaw
                 ], dtype=BBOX_DTYPE))
 
-            bbox = self.ego_vehicle.bounding_box
+            
+
+            
+
             ego_vehicle_bbox_data = np.array([
-                bbox.location.x, bbox.location.y, bbox.location.z,
-                bbox.extent.x, bbox.extent.y, bbox.extent.z,
-                tf.rotation.roll, tf.rotation.pitch, tf.rotation.yaw
+                ex, ey, ez,
+                ebbox.extent.x, ebbox.extent.y, ebbox.extent.z,
+                eroll, epitch, eyaw
             ], dtype=BBOX_DTYPE)
 
             grp = self.bbox_save_file.create_group(f"frame_{self.bbox_tick:06d}")
@@ -211,7 +271,13 @@ class ExperimentRunner:
             grp.create_dataset("actors", data=np.array(bounding_boxes))
             self.bbox_tick += 1
 
+    def save_actor_id_and_type(self):
+        actor_id_type_map = {a.id: a.type_id for a in self.world.get_actors()}
+        self.bbox_save_file["actor_id_type_map"] = [json.dumps(actor_id_type_map)]
+
     def run_once(self):
+        
+
         self.setup_bridge()
         time.sleep(15) #we could also be elaborate and somehow check the logs for success... but for now this should be enough
         if self.config.bridge_passive_mode:
@@ -239,6 +305,8 @@ class ExperimentRunner:
         time.sleep(5)
         if self.config.bridge_passive_mode:
             self.world.tick()
+        if self.config.record_bboxes:
+            self.save_actor_id_and_type()
         print(f"world ticks: {self.world_ticks}")
         tick = 0
         while True:
@@ -265,15 +333,15 @@ class ExperimentRunner:
 
 if __name__ == '__main__':
     test_config = ExperimentConfig(
-        "251114_eight_lidar_10s", 
+        "251119_eight_lidar_10s", 
         bridge_passive_mode=True,
-        record=False,
+        record=True,
         record_bboxes=True,
         duration_in_s=10,
-        num_vehicles=300,
-        num_walkers=10,
-        town="Town15",
-        host="winhost",
+        num_vehicles=250,
+        num_walkers=50,
+        town="Town01",
+        host="localhost",
     )
     runner = ExperimentRunner(test_config)
     runner.run_once()
