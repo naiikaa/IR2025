@@ -74,3 +74,26 @@ bbox.hdf5
         |_(actor_id, actor_type)
         |_(actor_id, actor_type)
 ```
+## Data description
+
+### lidar_data/sensors/frames/points
+- (x, y, z):`(float, float, float)` are positional coordinates of the point in the ego vehicle coordinate space
+- (cos):`(float)` is the incident
+- (objidx, objtag):`(int, str)` are unique IDs for an object and the type of the object
+
+### bbox/frames/ego
+- (x, y, z):`(float, float, float)` are positional coordinates of the ego vehicle in the absolute world coordinate space
+- (x extent, y extent, z extent):`(float, float, float)` are values describing the size of the bounding box around ego vehicle in combination the coordinates
+- (roll, pitch, yaw):`(float, float, float)` is the rotation information of the ego vehicle in the absolute world coordinate space
+
+## bbox/frames/actors
+- (actor_id):`(int)` unique identifier for actors
+- (x, y, z):`(float, float, float)` are positional coordinates of the actor in the ego vehicle coordinate space
+- (x extent, y extent, z extent):`(float, float, float)` are values describing the size of the bounding box around actor in combination the coordinates
+- (roll, pitch, yaw):`(float, float, float)` is the rotation information of actor in the ego vehicle coordinate space
+
+## bbox/actor_types
+- (actor_id):`(int)` unique identifier for actors
+- (actor_type):`(str)` type of actor corresponding to the ID
+
+![](image.png)
