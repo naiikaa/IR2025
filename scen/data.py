@@ -42,6 +42,30 @@ semantic_lidar_tags = {
   28 : "GuardRail", 
 }
 
+def semantic_tag_to_id(points):
+    new_dtype = [(n, "u4" if n == 'ObjTag' else points.dtype[n])
+             for n in points.dtype.names]
+
+    new_points = np.empty(points.shape, dtype=new_dtype)
+
+    for name in points.dtype.names:
+        if name != "ObjTag":
+            new_points[name] = points[name]
+
+    categories = [s.encode("utf8") for s in semantic_lidar_tags.values()]
+    cat = pd.Categorical(points["ObjTag"], categories=categories)
+
+    new_points["ObjTag"] = cat.codes
+    return new_points
+
+def semantic_id_to_tag(points):
+    lookup = np.array(list(semantic_lidar_tags.values()))
+    new_dtype = [(n, h5py.string_dtype(encoding='utf-8') if n == 'ObjTag' else points.dtype[n]) for n in points.dtype.names]
+    
+    new_points = points.astype(new_dtype)
+    new_points[:]["ObjTag"] = lookup[points[:]["ObjTag"]]
+    return new_points
+
 def save_metadata(lidar_data_fpath, car_config):
     with open(car_config, "r") as f:
         data = f.read()
@@ -72,13 +96,11 @@ def extract_pcl_data(dbfile, pcl_topics: list, output):
         # Extract points as numpy array
         field_names = [field.name for field in msg.fields]
         points = pc2.read_points(msg, field_names=field_names, skip_nans=True)
-
-        lookup = np.array(list(semantic_lidar_tags.values()))
-        new_dtype = [(n, h5py.string_dtype(encoding='utf-8') if n == 'ObjTag' else points.dtype[n]) for n in points.dtype.names]
         
-        new_points = points.astype(new_dtype)
-        new_points[:]["ObjTag"] = lookup[points[:]["ObjTag"]]
+        # Transform objtag id into tag 
+        new_points = semantic_id_to_tag(points)
         frame_idx = frame_counters[topic]
+
         topic_groups[topic].create_dataset(
             f"frame_{frame_idx:06d}",
             data=new_points,
