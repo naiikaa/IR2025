@@ -59,7 +59,7 @@ def semantic_tag_to_id(points):
     return new_points
 
 def semantic_id_to_tag(points):
-    lookup = np.array(list(semantic_lidar_tags.values()))
+    lookup = np.array([s.encode("utf8") for s in list(semantic_lidar_tags.values())])
     new_dtype = [(n, h5py.string_dtype(encoding='utf-8') if n == 'ObjTag' else points.dtype[n]) for n in points.dtype.names]
     
     new_points = points.astype(new_dtype)
