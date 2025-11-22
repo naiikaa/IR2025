@@ -1,7 +1,10 @@
 import pandas as pd
 import numpy as np
-import os, h5py, yaml
+from numpy.lib import recfunctions as rfn
+import os, h5py, yaml, sys, json
 from pathlib import Path
+sys.path.append(Path(__file__).parent)
+import util
 
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import PointCloud2, Image
@@ -142,6 +145,52 @@ def extract_pcl_topics(metadata_fpath):
 
     topic_list = [topic["topic_metadata"]["name"] for topic in topic_metadata if topic["topic_metadata"]["type"] == "sensor_msgs/msg/PointCloud2"]
     return topic_list
+
+def convert_pcl_to_ego(lidar_data_fpath, converted_fpath, topics, sensor_config, frames=None):
+    with open(sensor_config, "r") as f:
+        car_config = json.load(f)
+    print(car_config["objects"][0]["sensors"])
+
+    #transform id into topic
+    tf_into_topic = lambda x: f"/carla/ego_vehicle/{x}".replace("/", "_")
+    sensor_config = {
+        tf_into_topic(sensor['id']): sensor["spawn_point"]
+    for sensor in car_config["objects"][0]["sensors"]}
+
+    with h5py.File(lidar_data_fpath) as source, h5py.File(converted_fpath, "w") as to:
+        for topic in topics:
+            topic_group = source[topic]
+            if frames is None:
+                frame_names = [
+                    name for name in topic_group.keys()
+                    if name.startswith("frame_")
+                ]
+                frame_names = sorted(frame_names)
+            else:
+                frame_names = frames
+            target_topic_group = to.create_group(topic)
+            for frame in frame_names:
+                frame_data = source[topic][frame][:]
+                frame_data = semantic_tag_to_id(frame_data)
+                dtype=frame_data.dtype
+                frame_data = rfn.structured_to_unstructured(frame_data)
+                old_frame = frame_data[:, :3]
+                old_frame = old_frame = np.hstack([frame_data[:, :3], np.zeros((frame_data.shape[0], 3))])
+                old_frame[:, 3:] = 0
+                new_frame = np.zeros_like(old_frame)
+                sensor_tf = np.array(list(sensor_config[topic].values()))
+                rot_sensor_tf = sensor_tf.copy()
+                rot_sensor_tf[3:] *= -1
+                rot_sensor_tf[:3] *= 0
+                new_xyz, b = util.coords_to_ego_vectorized(old_frame, rot_sensor_tf)
+                new_frame[:, :3] = new_xyz
+                new_frame[:, :3] += sensor_tf[:3]
+                new_frame[:, 3:] = frame_data[:, 3:]
+
+                new_frame = rfn.unstructured_to_structured(new_frame, dtype)
+                new_frame = semantic_id_to_tag(new_frame)
+                
+                target_topic_group.create_dataset(frame, data=new_frame, compression='gzip')
 
 if __name__ == '__main__':
     db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
