@@ -4,9 +4,49 @@ from mpl_toolkits.mplot3d import Axes3D
 from pathlib import Path
 import numpy as np
 import h5py
+import gc
+for obj in gc.get_objects():   # Browse through ALL objects
+    if isinstance(obj, h5py.File):   # Just HDF5 files
+        try:
+            obj.close()
+        except:
+            pass # Was already closed
 
-def create_pcl_video(pcl_points, output_file, topic, semantic=True):
-    with h5py.File(pcl_points, 'r') as f:
+to_type = {
+  0 : "Unlabeled",
+  1 : "Roads",
+  2 : "SideWalks",
+  3 : "Buildings",
+  4 : "Wall",
+  5 : "Fence",
+  6 : "Pole",
+  7 : "TrafficLight",
+  8 : "TrafficSign",
+  9 : "Vegetation",
+  10 : "Terrain",
+  11 : "Sky",
+  12 : "Pedestrian",
+  13 : "Rider",
+  14 : "Car",
+  15 : "Truck",
+  16 : "Bus",
+  17 : "Train",
+  18 : "Motorcycle",
+  19 : "Bicycle",
+  20 : "Static",
+  21 : "Dynamic",
+  22 : "Other",
+  23 : "Water",
+  24 : "RoadLine",
+  25 : "Ground",
+  26 : "Bridge",
+  27 : "RailTrack",
+  28 : "GuardRail", 
+}
+to_id = {v: k for k, v in to_type.items()}
+
+def create_pcl_video(pcl_points, output_file,bbox_file, topic, semantic=True):
+    with h5py.File(pcl_points, 'r') as f, h5py.File(bbox_file, 'r') as f_bbox:
         print(f"reading file {pcl_points}...")
 
         fig = plt.figure(figsize=(10,8))
@@ -27,27 +67,69 @@ def create_pcl_video(pcl_points, output_file, topic, semantic=True):
 
         # Update function for animation
         def update(frame_idx):
-            ax.cla()  # clear previous points
-            points = f[f"{topic}/frame_{frame_idx:06d}"]
+            try:
+                ax.cla()  # clear previous points
+                points = f[f"{topic}/frame_{frame_idx:06d}"]
+                boxes = list(f_bbox[f"frame_{frame_idx:06d}/actors"])
 
-            x = points["x"]
-            y = points["y"]
-            z = points["z"]
-            i = points["ObjTag"]
+                x = points["x"]
+                y = points["y"]
+                z = points["z"]
+                i = [to_id[point.decode('utf8')] for point in points["ObjTag"]]
 
-            ax.scatter(x, y, z, c=i, s=1, cmap='viridis')
-            
-            ax.set_xlim(-50,50)
-            ax.set_ylim(-50,50)
-            ax.set_zlim(-5,5)
-            ax.set_xlabel('X [m]')
-            ax.set_ylabel('Y [m]')
-            ax.set_zlabel('Z [m]')
-            ax.set_title(f"LiDAR Frame {frame_idx}")
-            return []
+                ax.scatter(x, y, z, c=i, s=1, cmap='viridis')
+
+                #plot bounding boxes no rotation needed
+                for box in boxes:
+                    
+                    id, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw = box
+                    
+                    #get points of the box
+                    points = np.array([
+                        [bx - bxextend, by - byextend, bz - bzextend],
+                        [bx + bxextend, by - byextend, bz - bzextend],
+                        [bx + bxextend, by + byextend, bz - bzextend],
+                        [bx - bxextend, by + byextend, bz - bzextend],
+                        [bx - bxextend, by - byextend, bz + bzextend],
+                        [bx + bxextend, by - byextend, bz + bzextend],
+                        [bx + bxextend, by + byextend, bz + bzextend],
+                        [bx - bxextend, by + byextend, bz + bzextend],
+                    ])
+                    #draw lines between the points
+                    lines = [
+                        [points[0], points[1]],
+                        [points[1], points[2]],
+                        [points[2], points[3]],
+                        [points[3], points[0]],
+                        [points[4], points[5]],
+                        [points[5], points[6]],
+                        [points[6], points[7]],
+                        [points[7], points[4]],
+                        [points[0], points[4]],
+                        [points[1], points[5]],
+                        [points[2], points[6]],
+                        [points[3], points[7]],
+                    ]
+                    for line in lines:
+                        ax.plot([line[0][0], line[1][0]],
+                                [line[0][1], line[1][1]],
+                                [line[0][2], line[1][2]], c='r', alpha=0.5)
+                    
+                
+                ax.set_xlim(-10,10)
+                ax.set_ylim(-10,10)
+                ax.set_zlim(-10,10)
+                ax.set_xlabel('X [m]')
+                ax.set_ylabel('Y [m]')
+                ax.set_zlabel('Z [m]')
+                ax.set_title(f"LiDAR Frame {frame_idx}")
+                return []
+            except KeyError:
+                print(f"Frame {frame_idx} not found in the dataset.")
+                return []
 
         print("Create animation...")
-        ani = FuncAnimation(fig, update, frames=len(f[topic]), interval=50)
+        ani = FuncAnimation(fig, update, frames=len(f_bbox.keys())-1, interval=50)
 
         print("Save as MP4...")
         ani.save(output_file, writer='ffmpeg', fps=20)
@@ -97,10 +179,12 @@ def create_camera_video(db_file, topic_name, output_file, fps=20):
 if __name__ == '__main__':
     
     db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
+    bbox_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/')
     create_pcl_video(
         str(db_dir / "lidar_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
-        "_carla_ego_vehicle_lidar_right"
+        str(bbox_dir / "bbox.h5"),
+        "_carla_ego_vehicle_lidar_front"
     )
     # create_camera_video(
     #     db_file = str(db_dir / 'rosbag2_2025_10_11-19_24_30_0.db3'),

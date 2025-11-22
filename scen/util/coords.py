@@ -2,7 +2,6 @@ import numpy as np
 
 def coords_to_ego(bbox_worldcord, ego_vehicle_worldcord):
     # Convert bbox from world coordinates to ego vehicle coordinates
-    
     def rotation_matrix(roll, pitch, yaw):
         roll = roll * np.pi / 180
         pitch = pitch * np.pi / 180

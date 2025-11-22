@@ -238,23 +238,25 @@ class ExperimentRunner:
             eroll, epitch, eyaw = etf.rotation.roll, etf.rotation.pitch, etf.rotation.yaw
 
             for actor in visible_actors:
+                
                 abbox = actor.bounding_box
                 atf = actor.get_transform()
                 
                 ax,ay,az = abbox.location.x, abbox.location.y, abbox.location.z
-                aroll,apitch,ayaw = atf.rotation.roll, atf.rotation.pitch
+                aroll,apitch,ayaw = atf.rotation.roll, atf.rotation.pitch, atf.rotation.yaw
+                
 
-                new_coords,new_rotation = coords_to_ego([ex,ey,ez,eroll,epitch,eyaw],
-                                                       [ax,ay,az,aroll,apitch,ayaw])
+                new_coords,new_rotation = coords_to_ego([ax,ay,az,aroll,apitch,ayaw],[ex,ey,ez,eroll,epitch,eyaw])
                 ax,ay,az = new_coords
                 aroll,apitch,ayaw = new_rotation
+                
 
                 bounding_boxes.append(np.array([
                     actor.id,
                     ax, ay, az,
                     abbox.extent.x, abbox.extent.y, abbox.extent.z,
                     aroll, apitch, ayaw
-                ], dtype=BBOX_DTYPE))
+                ]))
 
             
 
@@ -264,12 +266,16 @@ class ExperimentRunner:
                 ex, ey, ez,
                 ebbox.extent.x, ebbox.extent.y, ebbox.extent.z,
                 eroll, epitch, eyaw
-            ], dtype=BBOX_DTYPE)
+            ])
 
             grp = self.bbox_save_file.create_group(f"frame_{self.bbox_tick:06d}")
             grp.create_dataset("ego", data=ego_vehicle_bbox_data)
             grp.create_dataset("actors", data=np.array(bounding_boxes))
             self.bbox_tick += 1
+
+            visible_actors_ids = np.array([])
+            visible_actors = np.array([])
+            bounding_boxes = np.array([])
 
     def save_actor_id_and_type(self):
         actor_id_type_map = {a.id: a.type_id for a in self.world.get_actors()}
