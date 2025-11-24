@@ -5,7 +5,7 @@ def coords_to_ego(bbox_worldcord, ego_vehicle_worldcord):
     def rotation_matrix(roll, pitch, yaw):
         roll = roll * np.pi / 180
         pitch = pitch * np.pi / 180
-        yaw = yaw * np.pi / 180
+        yaw = -yaw * np.pi / 180
 
         Rx = np.array([[1, 0, 0],
                        [0, np.cos(roll), -np.sin(roll)],
@@ -20,6 +20,7 @@ def coords_to_ego(bbox_worldcord, ego_vehicle_worldcord):
                        [0, 0, 1]])
         
         return Rz @ Ry @ Rx 
+    
     Re = rotation_matrix(ego_vehicle_worldcord[3], ego_vehicle_worldcord[4], ego_vehicle_worldcord[5])
 
     Rw = rotation_matrix(bbox_worldcord[3], bbox_worldcord[4], bbox_worldcord[5])
@@ -27,6 +28,7 @@ def coords_to_ego(bbox_worldcord, ego_vehicle_worldcord):
     Rbe = Re.T @ Rw
 
     bbox_ego_coords = Re.T @ (np.array(bbox_worldcord[0:3]) - np.array(ego_vehicle_worldcord[0:3]))
+
     bbox_ego_rotation = np.array([
         np.arctan2(Rbe[2,1], Rbe[2,2]),
         np.arcsin(-Rbe[2,0]),

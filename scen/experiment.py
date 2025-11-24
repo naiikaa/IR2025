@@ -230,11 +230,10 @@ class ExperimentRunner:
 
         if self.config.record_bboxes:
             bounding_boxes = []
-            
             ebbox = self.ego_vehicle.bounding_box
             etf = self.ego_vehicle.get_transform()
 
-            ex,ey,ez = ebbox.location.x, ebbox.location.y, ebbox.location.z
+            ex,ey,ez = etf.location.x, etf.location.y, etf.location.z
             eroll, epitch, eyaw = etf.rotation.roll, etf.rotation.pitch, etf.rotation.yaw
 
             for actor in visible_actors:
@@ -242,23 +241,17 @@ class ExperimentRunner:
                 abbox = actor.bounding_box
                 atf = actor.get_transform()
                 
-                ax,ay,az = abbox.location.x, abbox.location.y, abbox.location.z
+                ax,ay,az = atf.location.x, atf.location.y, atf.location.z
                 aroll,apitch,ayaw = atf.rotation.roll, atf.rotation.pitch, atf.rotation.yaw
                 
 
-                new_coords,new_rotation = coords_to_ego([ax,ay,az,aroll,apitch,ayaw],[ex,ey,ez,eroll,epitch,eyaw])
-                ax,ay,az = new_coords
-                aroll,apitch,ayaw = new_rotation
                 
-
                 bounding_boxes.append(np.array([
                     actor.id,
                     ax, ay, az,
                     abbox.extent.x, abbox.extent.y, abbox.extent.z,
                     aroll, apitch, ayaw
                 ]))
-
-            
 
             
 

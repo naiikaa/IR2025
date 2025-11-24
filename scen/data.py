@@ -5,7 +5,8 @@ import os, h5py, yaml, sys, json
 from pathlib import Path
 sys.path.append(Path(__file__).parent)
 import util
-
+from tqdm import tqdm   
+from util.coords import coords_to_ego
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import PointCloud2, Image
 import sensor_msgs_py.point_cloud2 as pc2
@@ -192,14 +193,39 @@ def convert_pcl_to_ego(lidar_data_fpath, converted_fpath, topics, sensor_config,
                 
                 target_topic_group.create_dataset(frame, data=new_frame, compression='gzip')
 
+def extract_translated_bbox_data(bbox_fpath,converted_fpath):
+    with h5py.File(bbox_fpath) as source, h5py.File(converted_fpath, "w") as to:
+        frames = list(source.keys())
+        for frame in tqdm(frames[1:]):
+            ego = list(source[frame]["ego"])
+            ex, ey, ez, ext, eyt, ezt, eroll, epitch, eyaw = ego
+            actors = list(source[frame]["actors"])
+            new_actors = []
+            for actor in actors:
+                id, ax, ay, az, axt, ayt, azt, aroll, apitch, ayaw = actor
+                new_coords,new_rotation = coords_to_ego([ax,ay,az,aroll,apitch,ayaw],[ex,ey,ez,eroll,epitch,eyaw])
+                ax,ay,az = new_coords
+                aroll,apitch,ayaw = new_rotation
+                new_actors.append([id, ax, ay, az, axt, ayt, azt, aroll, apitch, ayaw])
+            
+            frame_group = to.create_group(frame)
+            frame_group.create_dataset("ego", data=ego)
+            frame_group.create_dataset("actors", data=new_actors)
+
+
 if __name__ == '__main__':
     db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
     car_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/')
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
-    extract_pcl_data(
-        str(db_dir / 'db_0.db3'),
-        topic_list,
-        str(db_dir / 'lidar_data.h5')
+    # extract_pcl_data(
+    #     str(db_dir / 'db_0.db3'),
+    #     topic_list,
+    #     str(db_dir / 'lidar_data.h5')
+    # )
+
+    extract_translated_bbox_data(
+        str(car_dir / 'bbox.h5'),
+        str(car_dir / 'bbox_ego.h5')
     )
     save_metadata(
         str(db_dir / 'lidar_data.h5'),

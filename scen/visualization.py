@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import h5py
 import gc
+from tqdm import tqdm
+
 for obj in gc.get_objects():   # Browse through ALL objects
     if isinstance(obj, h5py.File):   # Just HDF5 files
         try:
@@ -81,39 +83,27 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topic, semantic=True):
 
                 #plot bounding boxes no rotation needed
                 for box in boxes:
-                    
                     id, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw = box
+                    #print(f"Box: {box}\n\n")
                     
-                    #get points of the box
-                    points = np.array([
-                        [bx - bxextend, by - byextend, bz - bzextend],
-                        [bx + bxextend, by - byextend, bz - bzextend],
-                        [bx + bxextend, by + byextend, bz - bzextend],
-                        [bx - bxextend, by + byextend, bz - bzextend],
-                        [bx - bxextend, by - byextend, bz + bzextend],
-                        [bx + bxextend, by - byextend, bz + bzextend],
-                        [bx + bxextend, by + byextend, bz + bzextend],
-                        [bx - bxextend, by + byextend, bz + bzextend],
-                    ])
-                    #draw lines between the points
-                    lines = [
-                        [points[0], points[1]],
-                        [points[1], points[2]],
-                        [points[2], points[3]],
-                        [points[3], points[0]],
-                        [points[4], points[5]],
-                        [points[5], points[6]],
-                        [points[6], points[7]],
-                        [points[7], points[4]],
-                        [points[0], points[4]],
-                        [points[1], points[5]],
-                        [points[2], points[6]],
-                        [points[3], points[7]],
-                    ]
-                    for line in lines:
-                        ax.plot([line[0][0], line[1][0]],
-                                [line[0][1], line[1][1]],
-                                [line[0][2], line[1][2]], c='r', alpha=0.5)
+                    cords = np.zeros((8, 4))
+
+                    cords[0, :] = np.array([bxextend, byextend, -bzextend, 1])
+                    cords[1, :] = np.array([-bxextend, byextend, -bzextend, 1])
+                    cords[2, :] = np.array([-bxextend, -byextend, -bzextend, 1])
+                    cords[3, :] = np.array([bxextend, -byextend, -bzextend, 1])
+                    cords[4, :] = np.array([bxextend, byextend, bzextend, 1])
+                    cords[5, :] = np.array([-bxextend, byextend, bzextend, 1])
+                    cords[6, :] = np.array([-bxextend, -byextend, bzextend, 1])
+                    cords[7, :] = np.array([bxextend, -byextend, bzextend, 1])
+
+                    #plot the bounding boxes
+                    for start, end in [(0,1), (1,2), (2,3), (3,0),
+                                       (4,5), (5,6), (6,7), (7,4),
+                                       (0,4), (1,5), (2,6), (3,7)]:
+                        ax.plot([cords[start,0]+bx, cords[end,0]+bx],
+                                [cords[start,1]+by, cords[end,1]+by],
+                                [cords[start,2]+bz, cords[end,2]+bz], c='r')
                     
                 
                 ax.set_xlim(-10,10)
@@ -183,7 +173,7 @@ if __name__ == '__main__':
     create_pcl_video(
         str(db_dir / "lidar_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
-        str(bbox_dir / "bbox.h5"),
+        str(bbox_dir / "bbox_ego.h5"),
         "_carla_ego_vehicle_lidar_front"
     )
     # create_camera_video(
