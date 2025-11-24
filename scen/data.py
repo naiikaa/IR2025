@@ -6,13 +6,14 @@ from pathlib import Path
 sys.path.append(Path(__file__).parent)
 import util
 from tqdm import tqdm   
-from util.coords import coords_to_ego
+from util.coords import coords_to_ego, rotation_matrix
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import PointCloud2, Image
 import sensor_msgs_py.point_cloud2 as pc2
 from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
 import cv2
 from cv_bridge import CvBridge
+from scipy.spatial import KDTree
 
 semantic_lidar_tags = {
   0 : "Unlabeled",
@@ -212,6 +213,65 @@ def extract_translated_bbox_data(bbox_fpath,converted_fpath):
             frame_group.create_dataset("ego", data=ego)
             frame_group.create_dataset("actors", data=new_actors)
 
+def process_filter_static_bboxes(lidar_points_fpath, boxes_fpath, preselect_distance=100, threshold=5):
+    with (h5py.File(lidar_points_fpath, "r+") as lidar_points_file, 
+    h5py.File(boxes_fpath, "r+") as boxes_file):
+        static_boxes = boxes_file["static_bounding_boxes"][:]
+        topics = list(lidar_points_file.keys())
+        frames = list(lidar_points_file[topics[0]].keys())
+
+        for frame in frames:
+            points = np.vstack([lidar_points_file[topic][frame] for topic in topics])
+            ego_box = boxes_file[frame]["ego"]
+            visible_static_boxes = filter_static_bboxes(points, static_boxes, ego_box, preselect_distance, threshold)
+            boxes_file[frame]["static"] = np.array(visible_static_boxes)
+
+
+def filter_static_bboxes(points, boxes, ego_box, preselect_distance=100, threshold=5):
+    """filters bounding boxes out that are not detected by sensors (aka points hitting the bounding box).
+    points use ego vehicle coordinate system. ego_box uses world coordinate system.
+    boxes are statically saved and selected if they are in a certain radius around the ego vehicle.
+    box is (x, y, z, x_ext, y_ext, z_ext, roll, pitch, yaw)"""
+    # preselect boxes depending on distance
+    mask = np.linalg.norm(boxes[:, :3] - ego_box[:3]) < preselect_distance
+    preselected_boxes = boxes[mask, :]
+    if len(preselected_boxes) == 0:
+        return []
+
+    kdtree = KDTree(points)
+    visible_boxes = []
+
+    for box in preselected_boxes:
+        rot_matrix = rotation_matrix(*box[6:])
+        candidate_point_idices = kdtree.query_ball_point(
+            box[:3], r=box[3:6]
+        )
+        if len(candidate_point_idices) == 0:
+            continue
+        candidate_points = kdtree[candidate_point_idices]
+
+        # align points with box coord system and check
+        # for containment
+        v = candidate_points - box[:3]
+        u = v @ np.stack([
+            rot_matrix[:,0], 
+            rot_matrix[:,1], 
+            rot_matrix[:,2]
+        ], axis=1)
+
+        mask = (
+            (np.abs(u[:,0]) <= box[3]) &
+            (np.abs(u[:,1]) <= box[4]) &
+            (np.abs(u[:,2]) <= box[5]) 
+        )
+
+        if mask.sum() >= threshold:
+            visible_boxes.append(box)
+
+        if mask.sum() >= 1:  # threshold of visible points
+            visible_boxes.append(box)
+
+    return visible_boxes
 
 if __name__ == '__main__':
     db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
