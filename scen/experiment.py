@@ -65,8 +65,6 @@ class ExperimentRunner:
         self.world = self.client.load_world(self.config.town)
         self.world = self.client.get_world()
         self.spawn_point_coords = self.world.get_map().get_spawn_points()[self.config.spawn_point]
-        print(f"{self.spawn_point_coords.location.x}, {self.spawn_point_coords.location.y}, {self.spawn_point_coords.location.z}")
-        print(f"{self.spawn_point_coords.rotation.pitch}, {self.spawn_point_coords.rotation.roll}, {self.spawn_point_coords.rotation.yaw}")
         self.timestep = 1 / self.config.fps
         self.world_ticks = int(self.config.duration_in_s / self.timestep)
         settings = self.world.get_settings()
@@ -138,7 +136,7 @@ class ExperimentRunner:
         egovehicle_logfile = open(self.config.egovehicle_log_file, "w")
         atexit.register(egovehicle_logfile.close)
 
-        egovehicle_cmd = f"ros2 launch carla_spawn_objects carla_spawn_objects.launch.py objects_definition_file:={self.config.ego_vehicle_file} spawn_point_ego_vehicle:={self.spawn_point_coords.location.x},{self.spawn_point_coords.location.y},{self.spawn_point_coords.location.z+0.2},{self.spawn_point_coords.rotation.roll},{self.spawn_point_coords.rotation.pitch},{self.spawn_point_coords.rotation.yaw}".split(" ")
+        egovehicle_cmd = f"ros2 launch carla_spawn_objects carla_spawn_objects.launch.py objects_definition_file:={self.config.ego_vehicle_file}".split(" ")
         self.processes["egovehicle_process"] = Popen(egovehicle_cmd, stdout=egovehicle_logfile, bufsize=1, universal_newlines=True)
         time.sleep(5)
         if self.config.bridge_passive_mode:
@@ -147,7 +145,13 @@ class ExperimentRunner:
         if self.config.bridge_passive_mode:
             self.world.tick()
         self.ego_vehicle = self.get_ego_vehicle_actor()
-        time.sleep(5)
+        time.sleep(15)
+
+        
+        self.ego_vehicle.set_transform(self.spawn_point_coords)
+        if self.config.bridge_passive_mode:
+            self.world.tick() 
+        time.sleep(15)
 
         if move_spectator:
             print(f"moving spectator to {self.ego_vehicle}")
