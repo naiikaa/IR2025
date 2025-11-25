@@ -132,7 +132,7 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
                 return []
 
         print("Create animation...")
-        ani = FuncAnimation(fig, update, frames=len(f_bbox.keys())-1, interval=50)
+        ani = FuncAnimation(fig, update, frames=500, interval=50)
 
         print("Save as MP4...")
         ani.save(output_file, writer='ffmpeg', fps=20)
@@ -191,8 +191,9 @@ def extract_pcl_topics(metadata_fpath):
 
 if __name__ == '__main__':
     
-    db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
-    bbox_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/')
+    
+    bbox_dir = Path('/home/npopkov/repos/IR2025/data/20251125_1950_250v_50w_22sp/')
+    db_dir = bbox_dir / "db/"
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
     
     create_pcl_video(

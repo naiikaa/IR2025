@@ -19,6 +19,8 @@ def coords_to_ego(bbox_worldcord, ego_vehicle_worldcord):
                         [0, 0, 1]])
         R = R_z @ R_y @ R_x
         return R
+    
+    
     # Extract positions and orientations
     bbox_pos = np.array(bbox_worldcord[0:3])
     bbox_rot = bbox_worldcord[3:6]
