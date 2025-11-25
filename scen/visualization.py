@@ -47,7 +47,7 @@ to_type = {
 }
 to_id = {v: k for k, v in to_type.items()}
 
-def create_pcl_video(pcl_points, output_file,bbox_file, topic, semantic=True):
+def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
     with h5py.File(pcl_points, 'r') as f, h5py.File(bbox_file, 'r') as f_bbox:
         print(f"reading file {pcl_points}...")
 
@@ -71,15 +71,16 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topic, semantic=True):
         def update(frame_idx):
             try:
                 ax.cla()  # clear previous points
-                points = f[f"{topic}/frame_{frame_idx:06d}"]
-                boxes = list(f_bbox[f"frame_{frame_idx:06d}/actors"])
+                for topic in topics:
+                    
+                    points = f[f"{topic}/frame_{frame_idx:06d}"]
+                    boxes = list(f_bbox[f"frame_{frame_idx:06d}/actors"])
+                    x = points["x"]
+                    y = points["y"]
+                    z = points["z"]
+                    i = [to_id[point.decode('utf8')] for point in points["ObjTag"]]
 
-                x = points["x"]
-                y = points["y"]
-                z = points["z"]
-                i = [to_id[point.decode('utf8')] for point in points["ObjTag"]]
-
-                ax.scatter(x, y, z, c=i, s=1, cmap='viridis')
+                    ax.scatter(x, y, z, c=i, s=1, cmap='viridis')
 
                 #plot bounding boxes no rotation needed
                 for box in boxes:
@@ -97,17 +98,29 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topic, semantic=True):
                     cords[6, :] = np.array([-bxextend, -byextend, bzextend, 1])
                     cords[7, :] = np.array([bxextend, -byextend, bzextend, 1])
 
-                    #plot the bounding boxes
-                    for start, end in [(0,1), (1,2), (2,3), (3,0),
-                                       (4,5), (5,6), (6,7), (7,4),
-                                       (0,4), (1,5), (2,6), (3,7)]:
-                        ax.plot([cords[start,0]+bx, cords[end,0]+bx],
-                                [cords[start,1]+by, cords[end,1]+by],
-                                [cords[start,2]+bz, cords[end,2]+bz], c='r')
-                    
-                
-                ax.set_xlim(-10,10)
-                ax.set_ylim(-10,10)
+                    yaw = np.deg2rad(byaw)
+                    rotation_matrix = np.array([
+                        [np.cos(yaw), -np.sin(yaw), 0, 0],
+                        [np.sin(yaw), np.cos(yaw), 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]
+                    ])
+
+                    cords = rotation_matrix @ cords.T
+                    cords = cords.T
+                    cords[:, 0] += bx
+                    cords[:, 1] -= by
+                    cords[:, 2] -= bz
+                    # Plot the edges of the bounding box
+                    edges = [(0,1), (1,2), (2,3), (3,0),
+                             (4,5), (5,6), (6,7), (7,4),
+                             (0,4), (1,5), (2,6), (3,7)]
+                    for edge in edges:
+                        ax.plot([cords[edge[0], 0], cords[edge[1], 0]],
+                                [cords[edge[0], 1], cords[edge[1], 1]],
+                                [cords[edge[0], 2], cords[edge[1], 2]], c='r')
+                ax.set_xlim(-10,20)
+                ax.set_ylim(-10,20)
                 ax.set_zlim(-10,10)
                 ax.set_xlabel('X [m]')
                 ax.set_ylabel('Y [m]')
@@ -130,6 +143,7 @@ from cv_bridge import CvBridge
 from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
 from sensor_msgs.msg import Image
 import rclpy.serialization
+import yaml
 
 def create_camera_video(db_file, topic_name, output_file, fps=20):
     bridge = CvBridge()
@@ -166,15 +180,26 @@ def create_camera_video(db_file, topic_name, output_file, fps=20):
 
     print(f"MP4 video created: {output_file}, total frames: {frame_count}")
 
+def extract_pcl_topics(metadata_fpath):
+    with open(metadata_fpath, 'r') as f:
+        metadata = yaml.safe_load(f)
+
+    topic_metadata = metadata["rosbag2_bagfile_information"]["topics_with_message_count"]
+
+    topic_list = [topic["topic_metadata"]["name"].replace("/", "_") for topic in topic_metadata if topic["topic_metadata"]["type"] == "sensor_msgs/msg/PointCloud2"]
+    return topic_list
+
 if __name__ == '__main__':
     
     db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
     bbox_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/')
+    topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
+    
     create_pcl_video(
         str(db_dir / "lidar_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
         str(bbox_dir / "bbox_ego.h5"),
-        "_carla_ego_vehicle_lidar_front"
+        topic_list
     )
     # create_camera_video(
     #     db_file = str(db_dir / 'rosbag2_2025_10_11-19_24_30_0.db3'),

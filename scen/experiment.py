@@ -61,7 +61,7 @@ class ExperimentRunner:
         os.makedirs(self.config.log_dir, exist_ok=True)
         self.processes = {}
         self.client = carla.Client(self.config.host, self.config.port)
-        self.client.set_timeout(10)
+        self.client.set_timeout(100)
         self.world = self.client.load_world(self.config.town)
         self.world = self.client.get_world()
         self.timestep = 1 / self.config.fps
@@ -71,7 +71,7 @@ class ExperimentRunner:
             settings.synchronous_mode = True
         settings.fixed_delta_seconds = self.timestep
 
-        settings.no_rendering_mode = True
+        settings.no_rendering_mode = False
  
         self.world.apply_settings(settings)
         atexit.register(self.cleanup)
@@ -336,10 +336,10 @@ if __name__ == '__main__':
         bridge_passive_mode=True,
         record=True,
         record_bboxes=True,
-        duration_in_s=10,
+        duration_in_s=0,
         num_vehicles=250,
         num_walkers=50,
-        town="Town01",
+        town="Town15",
         host="localhost",
     )
     runner = ExperimentRunner(test_config)
