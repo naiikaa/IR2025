@@ -1,0 +1,8 @@
+{
+  "num_vehicles" : [10,100,250],
+  "num_walkers" : [50,100,150],
+  #10-150,250-50,250-150
+  "duration" : [50],
+  "spawn_points" : [3,14,177,317,48,300,22,97,104,197,200,215,220,223,265,278,302,174,203,325]
+  # 5 spawn_points per person will result in 15 recordings per person
+  }
