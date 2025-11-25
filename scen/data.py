@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.append(Path(__file__).parent)
 import util
 from tqdm import tqdm   
-from util.coords import coords_to_ego, rotation_matrix
+from util.coords import coords_to_ego, rotation_matrix, coords_to_ego_vectorized
 from rclpy.serialization import deserialize_message
 from sensor_msgs.msg import PointCloud2, Image
 import sensor_msgs_py.point_cloud2 as pc2
@@ -151,7 +151,7 @@ def extract_pcl_topics(metadata_fpath):
 def convert_pcl_to_ego(lidar_data_fpath, converted_fpath, topics, sensor_config, frames=None):
     with open(sensor_config, "r") as f:
         car_config = json.load(f)
-    print(car_config["objects"][0]["sensors"])
+    #print(car_config["objects"][0]["sensors"])
 
     #transform id into topic
     tf_into_topic = lambda x: f"/carla/ego_vehicle/{x}".replace("/", "_")
@@ -160,7 +160,8 @@ def convert_pcl_to_ego(lidar_data_fpath, converted_fpath, topics, sensor_config,
     for sensor in car_config["objects"][0]["sensors"]}
 
     with h5py.File(lidar_data_fpath) as source, h5py.File(converted_fpath, "w") as to:
-        for topic in topics:
+        for topic in tqdm(topics, desc="Converting point clouds to ego frame"):
+            topic = topic.replace("/", "_")
             topic_group = source[topic]
             if frames is None:
                 frame_names = [
@@ -184,7 +185,7 @@ def convert_pcl_to_ego(lidar_data_fpath, converted_fpath, topics, sensor_config,
                 rot_sensor_tf = sensor_tf.copy()
                 rot_sensor_tf[3:] *= -1
                 rot_sensor_tf[:3] *= 0
-                new_xyz, b = util.coords_to_ego_vectorized(old_frame, rot_sensor_tf)
+                new_xyz, b = coords_to_ego_vectorized(old_frame, rot_sensor_tf)
                 new_frame[:, :3] = new_xyz
                 new_frame[:, :3] += sensor_tf[:3]
                 new_frame[:, 3:] = frame_data[:, 3:]
@@ -282,11 +283,17 @@ if __name__ == '__main__':
         topic_list,
         str(db_dir / 'lidar_data.h5')
     )
+    convert_pcl_to_ego(
+        str(db_dir / 'lidar_data.h5'),
+        str(db_dir / 'lidar_ego_data.h5'),
+        topic_list,
+        str(car_dir / 'eight_car_lidar.json')
+    )
 
-    # extract_translated_bbox_data(
-    #     str(car_dir / 'bbox.h5'),
-    #     str(car_dir / 'bbox_ego.h5')
-    # )
+    extract_translated_bbox_data(
+        str(car_dir / 'bbox.h5'),
+        str(car_dir / 'bbox_ego.h5')
+    )
     save_metadata(
         str(db_dir / 'lidar_data.h5'),
         str(car_dir / 'eight_car_lidar.json')

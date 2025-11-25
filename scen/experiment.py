@@ -331,8 +331,11 @@ class ExperimentRunner:
 
 
 if __name__ == '__main__':
-    test_config = ExperimentConfig(
-        "251119_eight_lidar_10s", 
+    #build name from current date+time in format YYYYMMDD_HHMMSS
+    from datetime import datetime
+    postfix = "experiment"
+    name = datetime.now().strftime("%Y%m%d_%H%M") + "_" + postfix
+    test_config = ExperimentConfig(name, 
         bridge_passive_mode=True,
         record=True,
         record_bboxes=True,
@@ -340,7 +343,7 @@ if __name__ == '__main__':
         num_vehicles=250,
         num_walkers=50,
         town="Town15",
-        host="localhost",
+        host="localhost", # set to "winhost" when using windows carla server
     )
     runner = ExperimentRunner(test_config)
     runner.run_once()

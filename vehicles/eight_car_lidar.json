@@ -81,7 +81,7 @@
                 {
                     "type": "sensor.lidar.ray_cast_semantic",
                     "id": "lidar_left",
-                    "spawn_point": {"x": 0.0, "y": 0.9, "z": 0.23, "roll": 0.0, "pitch": 9.0, "yaw": 90.0},
+                    "spawn_point": {"x": 0.0, "y": 0.9, "z": 0.23, "roll": 0.0, "pitch": 0.0, "yaw": 90.0},
                     "range": 100,
                     "channels": 64,
                     "points_per_second": 320000,

@@ -59,9 +59,8 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
         ax.set_xlim(-50, 50)
         ax.set_ylim(-50, 50)
         ax.set_zlim(-5, 5)
-        ax.set_xlabel('X [m]')
-        ax.set_ylabel('Y [m]')
-        ax.set_zlabel('Z [m]')
+        # turn off the axes
+        ax.axis('off')
         ax.set_title('LiDAR 3D Top-Down View')
 
         # Initialize scatter (empty)
@@ -69,6 +68,7 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
 
         # Update function for animation
         def update(frame_idx):
+            print(f"Processing frame {frame_idx}...")
             try:
                 ax.cla()  # clear previous points
                 for topic in topics:
@@ -98,7 +98,7 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
                     cords[6, :] = np.array([-bxextend, -byextend, bzextend, 1])
                     cords[7, :] = np.array([bxextend, -byextend, bzextend, 1])
 
-                    yaw = np.deg2rad(byaw)
+                    yaw = np.deg2rad(-byaw)
                     rotation_matrix = np.array([
                         [np.cos(yaw), -np.sin(yaw), 0, 0],
                         [np.sin(yaw), np.cos(yaw), 0, 0],
@@ -110,7 +110,7 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
                     cords = cords.T
                     cords[:, 0] += bx
                     cords[:, 1] -= by
-                    cords[:, 2] -= bz
+                    cords[:, 2] += bz
                     # Plot the edges of the bounding box
                     edges = [(0,1), (1,2), (2,3), (3,0),
                              (4,5), (5,6), (6,7), (7,4),
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
     
     create_pcl_video(
-        str(db_dir / "lidar_data.h5"),
+        str(db_dir / "lidar_ego_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
         str(bbox_dir / "bbox_ego.h5"),
         topic_list
