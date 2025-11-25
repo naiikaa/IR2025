@@ -64,6 +64,9 @@ class ExperimentRunner:
         self.client.set_timeout(100)
         self.world = self.client.load_world(self.config.town)
         self.world = self.client.get_world()
+        self.spawn_point_coords = self.world.get_map().get_spawn_points()[self.config.spawn_point]
+        print(f"{self.spawn_point_coords.location.x}, {self.spawn_point_coords.location.y}, {self.spawn_point_coords.location.z}")
+        print(f"{self.spawn_point_coords.rotation.pitch}, {self.spawn_point_coords.rotation.roll}, {self.spawn_point_coords.rotation.yaw}")
         self.timestep = 1 / self.config.fps
         self.world_ticks = int(self.config.duration_in_s / self.timestep)
         settings = self.world.get_settings()
@@ -134,7 +137,8 @@ class ExperimentRunner:
         print("Spawning ego vehicle... (see logfile)")
         egovehicle_logfile = open(self.config.egovehicle_log_file, "w")
         atexit.register(egovehicle_logfile.close)
-        egovehicle_cmd = f"ros2 launch carla_spawn_objects carla_spawn_objects.launch.py objects_definition_file:={self.config.ego_vehicle_file}".split(" ")
+
+        egovehicle_cmd = f"ros2 launch carla_spawn_objects carla_spawn_objects.launch.py objects_definition_file:={self.config.ego_vehicle_file} spawn_point_ego_vehicle:={self.spawn_point_coords.location.x},{self.spawn_point_coords.location.y},{self.spawn_point_coords.location.z+0.2},{self.spawn_point_coords.rotation.roll},{self.spawn_point_coords.rotation.pitch},{self.spawn_point_coords.rotation.yaw}".split(" ")
         self.processes["egovehicle_process"] = Popen(egovehicle_cmd, stdout=egovehicle_logfile, bufsize=1, universal_newlines=True)
         time.sleep(5)
         if self.config.bridge_passive_mode:
@@ -333,16 +337,20 @@ class ExperimentRunner:
 if __name__ == '__main__':
     #build name from current date+time in format YYYYMMDD_HHMMSS
     from datetime import datetime
-    postfix = "experiment"
+    vehicles = 10
+    walker = 150
+    spawn_point = 3
+    postfix = f"{vehicles}v_{walker}w_{spawn_point}sp"
     name = datetime.now().strftime("%Y%m%d_%H%M") + "_" + postfix
     test_config = ExperimentConfig(name, 
         bridge_passive_mode=True,
         record=True,
         record_bboxes=True,
-        duration_in_s=0,
-        num_vehicles=250,
-        num_walkers=50,
+        duration_in_s=50,
+        num_vehicles=vehicles,
+        num_walkers=walker,
         town="Town15",
+        spawn_point=spawn_point,
         host="localhost", # set to "winhost" when using windows carla server
     )
     runner = ExperimentRunner(test_config)

@@ -15,6 +15,7 @@ class ExperimentConfig:
 
     # scenario config
     town: str = "Town10HD"
+    spawn_point: int = 3
     generate_traffic_path: str = Path(__file__).parent.parent.parent / "carla" / "PythonAPI" / "examples" / "generate_traffic.py"
     scenario_type: str = "traffic_manager"
     duration_in_s: float = 10 # 0 for infinite
