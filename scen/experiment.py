@@ -82,6 +82,21 @@ class ExperimentRunner:
             self.bbox_save_file = h5py.File(self.config.bbox_save_file_path, 'w')
             atexit.register(self.bbox_save_file.close)
             self.bbox_tick = 0
+            self.save_static_bboxes()
+
+    def save_static_bboxes(self):
+        print("Saving static bboxes...")
+        with h5py.File(self.config.bbox_save_file_path.with_stem("bbox_static"), 'w') as f:
+            env_objs = self.world.get_environment_objects()
+
+            obj_bboxes = np.array([[
+                obj.id, obj.type,
+                obj.transform.location.x, obj.transform.location.y, obj.transform.location.z,
+                obj.bounding_box.extent.x, obj.bounding_box.extent.y, obj.bounding_box.extent.z,
+                obj.bounding_box.rotation.roll, obj.bounding_box.rotation.pitch, obj.bounding_box.rotation.yaw
+            ] for obj in env_objs])
+
+            f.create_dataset("static_bounding_boxes", data=obj_bboxes, compression="gzip")
 
     def _debug_mark_sensors_in_carla(self):
         sensors = self.world.get_actors().filter('sensor.*')
