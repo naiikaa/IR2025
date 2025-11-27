@@ -98,9 +98,10 @@ def coords_to_ego_vectorized(bbox_worldcord, ego_vehicle_worldcord):
     )
 
     Rbe = Re.T @ Rw
-    roll = np.arctan2(Rbe[2,1], Rbe[2,2])
-    pitch = np.arcsin(-Rbe[2,0])
-    yaw = np.arctan2(Rbe[1,0], Rbe[0,0])
+    
+    roll = np.arctan2(Rbe[:,2,1], Rbe[:,2,2])
+    pitch = np.arcsin(-Rbe[:,2,0])
+    yaw = np.arctan2(Rbe[:,1,0], Rbe[:,0,0])
 
     bbox_ego_coords = (Re.T @ (bbox_worldcord[:, :3] - ego_vehicle_worldcord[:3]).T).T
 

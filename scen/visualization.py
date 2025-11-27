@@ -47,7 +47,45 @@ to_type = {
 }
 to_id = {v: k for k, v in to_type.items()}
 
-def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
+def plot_box(ax, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw, color='r', upper_right_corner=True):
+    #print(f"Box: {box}\n\n")
+    
+    cords = np.zeros((8, 4))
+
+    cords[0, :] = np.array([bxextend, byextend, -bzextend, 1])
+    cords[1, :] = np.array([-bxextend, byextend, -bzextend, 1])
+    cords[2, :] = np.array([-bxextend, -byextend, -bzextend, 1])
+    cords[3, :] = np.array([bxextend, -byextend, -bzextend, 1])
+    cords[4, :] = np.array([bxextend, byextend, bzextend, 1])
+    cords[5, :] = np.array([-bxextend, byextend, bzextend, 1])
+    cords[6, :] = np.array([-bxextend, -byextend, bzextend, 1])
+    cords[7, :] = np.array([bxextend, -byextend, bzextend, 1])
+
+    yaw = np.deg2rad(-byaw)
+    rotation_matrix = np.array([
+        [np.cos(yaw), -np.sin(yaw), 0, 0],
+        [np.sin(yaw), np.cos(yaw), 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]
+    ])
+
+    cords = rotation_matrix @ cords.T
+    cords = cords.T
+    cords[:, 0] += bx
+    cords[:, 1] += by#
+    cords[:, 2] += bz
+    # Plot the edges of the bounding box
+    edges = [(0,1), (1,2), (2,3), (3,0),
+            (4,5), (5,6), (6,7), (7,4),
+            (0,4), (1,5), (2,6), (3,7)]
+    for edge in edges:
+        ax.plot([cords[edge[0], 0], cords[edge[1], 0]],
+                [cords[edge[0], 1], cords[edge[1], 1]],
+                [cords[edge[0], 2], cords[edge[1], 2]], c=color)
+    if upper_right_corner:
+        ax.scatter(cords[4, 0], cords[4, 1], cords[4, 2], c='r', s=5)
+
+def create_pcl_video(pcl_points, output_file,bbox_file, topics, frames=None):
     with h5py.File(pcl_points, 'r') as f, h5py.File(bbox_file, 'r') as f_bbox:
         print(f"reading file {pcl_points}...")
 
@@ -73,8 +111,11 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
                 ax.cla()  # clear previous points
                 for topic in topics:
                     
-                    points = f[f"{topic}/frame_{frame_idx:06d}"]
+                    points = f[f"{topic}/frame_{frame_idx+6:06d}"]
                     boxes = list(f_bbox[f"frame_{frame_idx:06d}/actors"])
+                    static_boxes = []
+                    if "static" in f_bbox[f"frame_{frame_idx:06d}"]:
+                        static_boxes = list(f_bbox[f"frame_{frame_idx:06d}/static"])
                     x = points["x"]
                     y = points["y"]
                     z = points["z"]
@@ -85,40 +126,16 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
                 #plot bounding boxes no rotation needed
                 for box in boxes:
                     id, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw = box
-                    #print(f"Box: {box}\n\n")
-                    
-                    cords = np.zeros((8, 4))
-
-                    cords[0, :] = np.array([bxextend, byextend, -bzextend, 1])
-                    cords[1, :] = np.array([-bxextend, byextend, -bzextend, 1])
-                    cords[2, :] = np.array([-bxextend, -byextend, -bzextend, 1])
-                    cords[3, :] = np.array([bxextend, -byextend, -bzextend, 1])
-                    cords[4, :] = np.array([bxextend, byextend, bzextend, 1])
-                    cords[5, :] = np.array([-bxextend, byextend, bzextend, 1])
-                    cords[6, :] = np.array([-bxextend, -byextend, bzextend, 1])
-                    cords[7, :] = np.array([bxextend, -byextend, bzextend, 1])
-
-                    yaw = np.deg2rad(-byaw)
-                    rotation_matrix = np.array([
-                        [np.cos(yaw), -np.sin(yaw), 0, 0],
-                        [np.sin(yaw), np.cos(yaw), 0, 0],
-                        [0, 0, 1, 0],
-                        [0, 0, 0, 1]
-                    ])
-
-                    cords = rotation_matrix @ cords.T
-                    cords = cords.T
-                    cords[:, 0] += bx
-                    cords[:, 1] -= by
-                    cords[:, 2] += bz
-                    # Plot the edges of the bounding box
-                    edges = [(0,1), (1,2), (2,3), (3,0),
-                             (4,5), (5,6), (6,7), (7,4),
-                             (0,4), (1,5), (2,6), (3,7)]
-                    for edge in edges:
-                        ax.plot([cords[edge[0], 0], cords[edge[1], 0]],
-                                [cords[edge[0], 1], cords[edge[1], 1]],
-                                [cords[edge[0], 2], cords[edge[1], 2]], c='r')
+                    plot_box(ax, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw)
+                for box in static_boxes:
+                    id, t, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw = box
+                    plot_box(ax, bx, by, bz, bxextend, byextend, bzextend, broll, bpitch, byaw, 'b')
+                ax.scatter(
+                    5, 5, 5, c='r', s=20
+                )
+                ax.scatter(
+                    5, -5, 5, c='r', s=20
+                )
                 ax.set_xlim(-10,20)
                 ax.set_ylim(-10,20)
                 ax.set_zlim(-10,10)
@@ -132,7 +149,8 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, semantic=True):
                 return []
 
         print("Create animation...")
-        ani = FuncAnimation(fig, update, frames=len(f_bbox.keys())-1, interval=50)
+        frames = frames if frames is not None else len(f_bbox.keys())-1
+        ani = FuncAnimation(fig, update, frames=frames, interval=50)
 
         print("Save as MP4...")
         ani.save(output_file, writer='ffmpeg', fps=20)
@@ -196,10 +214,11 @@ if __name__ == '__main__':
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
     
     create_pcl_video(
-        str(db_dir / "lidar_ego_data.h5"),
+        str(db_dir / "lidar_ego_data_(m1).h5"),
         str(db_dir / "lidar_3d_video.mp4"),
-        str(bbox_dir / "bbox_ego.h5"),
-        topic_list
+        str(bbox_dir / "test.h5"),
+        topic_list,
+        frames=range(110, 150)
     )
     # create_camera_video(
     #     db_file = str(db_dir / 'rosbag2_2025_10_11-19_24_30_0.db3'),
