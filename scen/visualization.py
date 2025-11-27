@@ -217,7 +217,7 @@ if __name__ == '__main__':
     create_pcl_video(
         str(db_dir / "lidar_ego_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
-        str(bbox_dir / "bbox_static_ego.h5"),
+        str(bbox_dir / "bbox_ego.h5"),
         topic_list,
         frames=None
     )
