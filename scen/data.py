@@ -231,10 +231,15 @@ def extract_translated_bbox_data(bbox_fpath,converted_fpath, process_statics=Tru
             else:
                 frame_group.create_dataset("static", data=statics)
 
-def process_filter_static_bboxes(lidar_points_fpath, boxes_fpath, static_boxes_fpath, preselect_distance=100, point_in_box_filtering=True, threshold=5, name="bbox_with_static.h5"):
+
+  
+
+def process_filter_static_bboxes(lidar_points_fpath, boxes_fpath, static_boxes_fpath, preselect_distance=100, point_in_box_filtering=True, threshold=5, name="bbox_with_static.h5",
+                                 filter_static_box_types=None):
     """takes frames from boxes.h5"""
     new_boxes_fpath = str(Path(boxes_fpath).with_name(name))
     shutil.copy(str(boxes_fpath), str(new_boxes_fpath), )
+    filter_static_box_types = filter_static_box_types if filter_static_box_types is not None else [12,  13,  14,  15,  16,  17,  18,  19]
 
     with (h5py.File(lidar_points_fpath, "r+") as lidar_points_file, 
     h5py.File(new_boxes_fpath, "r+") as boxes_file,
@@ -260,12 +265,14 @@ def process_filter_static_bboxes(lidar_points_fpath, boxes_fpath, static_boxes_f
                                               dtype=visible_static_boxes.dtype)
 
 
-def filter_static_bboxes(points, boxes, ego_box, preselect_distance=100, point_in_box_filtering=True, threshold=5):
+def filter_static_bboxes(points, boxes, ego_box, preselect_distance=100, point_in_box_filtering=True, threshold=5, filter_static_box_types = None):
     """filters bounding boxes out that are not detected by sensors (aka points hitting the bounding box).
     points use ego vehicle coordinate system. ego_box uses world coordinate system.
     boxes are statically saved and selected if they are in a certain radius around the ego vehicle.
     static boxes are (id, type, x, y, z, x_ext, y_ext, z_ext, roll, pitch, yaw)"""
     # preselect boxes depending on distance
+    filter_static_box_types = filter_static_box_types if filter_static_box_types is not None else [12,  13,  14,  15,  16,  17,  18,  19]
+    boxes = boxes[np.isin(boxes[:, 1], filter_static_box_types)]
     mask = np.linalg.norm(boxes[:, 2:5] - ego_box[:3], axis=1)
     preselected_boxes = boxes[(mask < preselect_distance), :]
     if len(preselected_boxes) == 0:
