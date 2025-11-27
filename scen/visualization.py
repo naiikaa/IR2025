@@ -111,7 +111,7 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, frames=None):
                 ax.cla()  # clear previous points
                 for topic in topics:
                     
-                    points = f[f"{topic}/frame_{frame_idx+6:06d}"]
+                    points = f[f"{topic}/frame_{frame_idx:06d}"]
                     boxes = list(f_bbox[f"frame_{frame_idx:06d}/actors"])
                     static_boxes = []
                     if "static" in f_bbox[f"frame_{frame_idx:06d}"]:
@@ -149,7 +149,7 @@ def create_pcl_video(pcl_points, output_file,bbox_file, topics, frames=None):
                 return []
 
         print("Create animation...")
-        frames = frames if frames is not None else len(f_bbox.keys())-1
+        frames = frames if frames is not None else len(list(f_bbox.keys())[1:])-1
         ani = FuncAnimation(fig, update, frames=frames, interval=50)
 
         print("Save as MP4...")
@@ -210,16 +210,16 @@ def extract_pcl_topics(metadata_fpath):
 if __name__ == '__main__':
     
     
-    bbox_dir = Path('/home/npopkov/repos/IR2025/data/20251125_1950_250v_50w_22sp/')
+    bbox_dir = Path('/home/npopkov/repos/IR2025/data/20251127_1754_30v_10w_265sp/')
     db_dir = bbox_dir / "db/"
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
     
     create_pcl_video(
-        str(db_dir / "lidar_ego_data_(m1).h5"),
+        str(db_dir / "lidar_ego_data.h5"),
         str(db_dir / "lidar_3d_video.mp4"),
-        str(bbox_dir / "test.h5"),
+        str(bbox_dir / "bbox_static_ego.h5"),
         topic_list,
-        frames=range(110, 150)
+        frames=None
     )
     # create_camera_video(
     #     db_file = str(db_dir / 'rosbag2_2025_10_11-19_24_30_0.db3'),

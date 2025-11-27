@@ -365,7 +365,7 @@ if __name__ == '__main__':
         bridge_passive_mode=True,
         record=True,
         record_bboxes=True,
-        duration_in_s=50,
+        duration_in_s=5,
         num_vehicles=vehicles,
         num_walkers=walker,
         town="Town15",

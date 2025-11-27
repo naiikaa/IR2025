@@ -106,15 +106,18 @@ def extract_pcl_data(dbfile, pcl_topics: list, output):
         # Transform objtag id into tag 
         new_points = semantic_id_to_tag(points)
         frame_idx = frame_counters[topic]
+        
+        frame_counters[topic] += 1
+        
+        if frame_idx <= 6:
+            continue
 
         topic_groups[topic].create_dataset(
-            f"frame_{frame_idx:06d}",
+            f"frame_{frame_idx-7:06d}",
             data=new_points,
             compression='gzip',
             compression_opts=4
         )
-
-        frame_counters[topic] += 1
     h5_file.close()
 
 def extract_camera_data(db_file, topic_name, output_dir):
@@ -184,7 +187,7 @@ def convert_pcl_to_ego(lidar_data_fpath, converted_fpath, topics, sensor_config,
                 new_frame = np.zeros_like(old_frame)
                 sensor_tf = np.array(list(sensor_config[topic].values()))
                 rot_sensor_tf = sensor_tf.copy()
-                rot_sensor_tf[3:] *= 1
+                rot_sensor_tf[3:] *= -1
                 rot_sensor_tf[:3] *= 0
                 new_xyz, b = coords_to_ego_vectorized(old_frame, rot_sensor_tf)
                 new_frame[:, :3] = new_xyz
@@ -211,14 +214,14 @@ def extract_translated_bbox_data(bbox_fpath,converted_fpath, process_statics=Tru
                 new_coords,new_rotation = coords_to_ego([ax,ay,az,aroll,apitch,ayaw],[ex,ey,ez,eroll,epitch,eyaw])
                 ax,ay,az = new_coords
                 aroll,apitch,ayaw = new_rotation
-                new_actors.append([id, ax, ay, az, axt, ayt, azt, aroll, apitch, ayaw])
+                new_actors.append([id, ax, -ay, az, axt, ayt, azt, aroll, apitch, -ayaw])
             if process_statics:
                 for static in statics:
                     id, t, ax, ay, az, axt, ayt, azt, aroll, apitch, ayaw = static
                     new_coords,new_rotation = coords_to_ego([ax,ay,az,aroll,apitch,ayaw],[ex,ey,ez,eroll,epitch,eyaw])
                     ax,ay,az = new_coords
                     aroll,apitch,ayaw = new_rotation
-                    new_statics.append([id, t, ax, ay, az, axt, ayt, azt, aroll, apitch, ayaw])
+                    new_statics.append([id, t, ax, -ay, az, axt, ayt, azt, aroll, apitch, -ayaw])
             
             frame_group = to.create_group(frame)
             frame_group.create_dataset("ego", data=ego)
@@ -240,7 +243,7 @@ def process_filter_static_bboxes(lidar_points_fpath, boxes_fpath, static_boxes_f
         print("Total amount of static boxes in the map:", len(static_boxes))
         topics = list(lidar_points_file.keys())
         frames = list(lidar_points_file[topics[0]].keys())
-        frames = frames[110:150]
+        #frames = frames[110:150]
         tracking_boxes = []
         
         for frame in tqdm(frames, desc="Processing Frames"):
@@ -310,61 +313,42 @@ def filter_static_bboxes(points, boxes, ego_box, preselect_distance=100, point_i
             visible_boxes.append(box)
         else:
             not_visible.append(box)
-        continue
-        # align points with box coord system and check
-        # for containment
-        a = np.array([box[8:]])
-        rot_matrix = rotation_matrix(a[:, 0], a[:, 1], a[:, 2])[0]
-        v = candidate_points - box[2:5]
-        u = v @ np.stack([
-            rot_matrix[:,0], 
-            rot_matrix[:,1], 
-            rot_matrix[:,2]
-        ], axis=1)
-        mask = (
-            (np.abs(u[:,0]) <= box[3]) &
-            (np.abs(u[:,1]) <= box[4]) &
-            (np.abs(u[:,2]) <= box[5]) 
-        )
-
-        if mask.sum() >= threshold:
-            visible_boxes.append(box)
-    print(not_visible)
+        
     return visible_boxes
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--car_dir', type=str, default='/home/npopkov/repos/IR2025/data/20251125_1950_250v_50w_22sp/')
+    parser.add_argument('--car_dir', type=str, default='/home/npopkov/repos/IR2025/data/20251127_1754_30v_10w_265sp/')
     args = parser.parse_args()
 
     
     car_dir = Path(args.car_dir)
     db_dir = car_dir / "db/"
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
-    # extract_pcl_data(
-    #     str(db_dir / 'db_0.db3'),
-    #     topic_list,
-    #     str(db_dir / 'lidar_data.h5')
-    # )
-    # convert_pcl_to_ego(
-    #     str(db_dir / 'lidar_data.h5'),
-    #     str(db_dir / 'lidar_ego_data.h5'),
-    #     topic_list,
-    #     str(car_dir / 'eight_car_lidar.json')
-    # )
+    extract_pcl_data(
+        str(db_dir / 'db_0.db3'),
+        topic_list,
+        str(db_dir / 'lidar_data.h5')
+    )
+    convert_pcl_to_ego(
+        str(db_dir / 'lidar_data.h5'),
+        str(db_dir / 'lidar_ego_data.h5'),
+        topic_list,
+        str(car_dir / 'eight_car_lidar.json')
+    )
 
     process_filter_static_bboxes(
-        str(db_dir / 'lidar_ego_data_(m1).h5'),
+        str(db_dir / 'lidar_ego_data.h5'),
         str(car_dir / 'bbox.h5'),
         str(car_dir / 'bbox_static.h5'),
         preselect_distance=100, 
         point_in_box_filtering=True,
-        threshold=50, name="test.h5")
-    # extract_translated_bbox_data(
-    #     str(car_dir / 'test.h5'),
-    #     str(car_dir / 'bbox_ego.h5'),
-    #     process_statics=False
-    # )
+        threshold=50, name="bbox_static_ego.h5")
+    extract_translated_bbox_data(
+        str(car_dir / 'bbox_static_ego.h5'),
+        str(car_dir / 'bbox_ego.h5'),
+        process_statics=False
+    )
 
     # save_metadata(
     #     str(db_dir / 'lidar_data.h5'),
