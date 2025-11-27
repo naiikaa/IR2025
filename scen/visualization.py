@@ -209,8 +209,9 @@ def extract_pcl_topics(metadata_fpath):
 
 if __name__ == '__main__':
     
-    db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
-    bbox_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/')
+    
+    bbox_dir = Path('/home/npopkov/repos/IR2025/data/20251125_1950_250v_50w_22sp/')
+    db_dir = bbox_dir / "db/"
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
     
     create_pcl_video(

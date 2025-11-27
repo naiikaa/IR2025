@@ -356,9 +356,9 @@ class ExperimentRunner:
 if __name__ == '__main__':
     #build name from current date+time in format YYYYMMDD_HHMMSS
     from datetime import datetime
-    vehicles = 10
-    walker = 150
-    spawn_point = 3
+    vehicles = 30
+    walker = 10
+    spawn_point = 265
     postfix = f"{vehicles}v_{walker}w_{spawn_point}sp"
     name = datetime.now().strftime("%Y%m%d_%H%M") + "_" + postfix
     test_config = ExperimentConfig(name, 

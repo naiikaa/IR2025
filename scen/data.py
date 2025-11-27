@@ -14,6 +14,7 @@ from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
 import cv2
 from cv_bridge import CvBridge
 from scipy.spatial import KDTree
+import argparse
 
 semantic_lidar_tags = {
   0 : "Unlabeled",
@@ -332,8 +333,13 @@ def filter_static_bboxes(points, boxes, ego_box, preselect_distance=100, point_i
     return visible_boxes
 
 if __name__ == '__main__':
-    db_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/db/')
-    car_dir = Path('/home/npopkov/repos/IR2025/data/251119_eight_lidar_10s/')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--car_dir', type=str, default='/home/npopkov/repos/IR2025/data/20251125_1950_250v_50w_22sp/')
+    args = parser.parse_args()
+
+    
+    car_dir = Path(args.car_dir)
+    db_dir = car_dir / "db/"
     topic_list = extract_pcl_topics(db_dir / "metadata.yaml")
     # extract_pcl_data(
     #     str(db_dir / 'db_0.db3'),
